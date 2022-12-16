@@ -6,15 +6,20 @@
 %Script compiles filenames of all data files to be loaded into netCDF
 %files. Creates separate table for each data type for ease of organization.
 %TDR order determined based on data quality, completeness, and tag type.
+
+%V1.1: 
+%   Includes both filename and directory location of each file in
+%       indecx spreadsheets.
+%   Checks for existence of TOPPID in MetaData before adding files.
+%   Changed table preallocation method
 clear
 load('MetaData.mat')
 
 %% TrackFoieGrasFiles: TOPPID, foieGras filename
 
 %Preallocate space and format table
-TrackFoieGrasFiles=NaN(size(MetaDataAll,1),2);
-TrackFoieGrasFiles=array2table(TrackFoieGrasFiles,'VariableNames',{'TOPPID','filename'});
-TrackFoieGrasFiles.filename=string(TrackFoieGrasFiles.filename);
+TrackFoieGrasFiles=table('Size',[size(MetaDataAll,1),3],'VariableNames',{'TOPPID','filename','folder'},...
+    'VariableTypes',{'double','string','string'});
 
 %Find all files with foieGras_crw in filename
 files=dir('F:\Data\Eseal_Data\Tracking Diving 2004-2020\**\*foieGras_crw.csv');
@@ -22,82 +27,94 @@ for i=1:size(files,1)
     %Pull TOPPID directly from filename
     TOPPID=str2double(strtok(files(i).name,'_'));
     if sum(TagMetaDataAll.TOPPID==TOPPID)>0
-        TrackFoieGrasFiles.TOPPID(i)=str2double(strtok(files(i).name,'_'));
-        TrackFoieGrasFiles.filename(i)=strcat(files(i).folder,'\',files(i).name);
+        TrackFoieGrasFiles.TOPPID(i)=TOPPID;
+        TrackFoieGrasFiles.filename(i)=files(i).name;
+        TrackFoieGrasFiles.folder(i)=files(i).folder;
     end
+    clear TOPPID
 end
 
-%Remove extra rows in table
+%Remove extra rows in table and sort by TOPPID (ascending order)
+TrackFoieGrasFiles(TrackFoieGrasFiles.TOPPID==0,:)=[];
 TrackFoieGrasFiles=sortrows(TrackFoieGrasFiles);
-TrackFoieGrasFiles(isnan(TrackFoieGrasFiles.TOPPID),:)=[];
 clear files
 
 %% ArgosFiles: TOPPID, raw argos filename
 
 %Preallocate space and format table
-ArgosFiles=NaN(size(MetaDataAll,1),2);
-ArgosFiles=array2table(ArgosFiles,'VariableNames',{'TOPPID','filename'});
-ArgosFiles.filename=string(ArgosFiles.filename);
+ArgosFiles=table('Size',[size(MetaDataAll,1),3],'VariableNames',{'TOPPID','filename','folder'},...
+    'VariableTypes',{'double','string','string'});
 
 %Find all files with RawArgos in filename
 files=dir('F:\Data\Eseal_Data\Tracking Diving 2004-2020\**\*RawArgos.csv');
 for i=1:size(files,1)
     %Pull TOPPID directly from filename
-    ArgosFiles.TOPPID(i)=str2double(strtok(files(i).name,'_'));
-    ArgosFiles.filename(i)=files(i).name;
+    TOPPID=str2double(strtok(files(i).name,'_'));
+    if sum(TagMetaDataAll.TOPPID==TOPPID)>0
+        ArgosFiles.TOPPID(i)=TOPPID;
+        ArgosFiles.filename(i)=files(i).name;
+        ArgosFiles.folder(i)=files(i).folder;
+    end
+    clear TOPPID
 end
 
-%Remove extra rows in table
+%Remove extra rows in table and sort by TOPPID (ascending order)
+ArgosFiles(ArgosFiles.TOPPID==0,:)=[];
 ArgosFiles=sortrows(ArgosFiles);
-ArgosFiles(isnan(ArgosFiles.TOPPID),:)=[];
 clear files
 
 %% GPSFiles: TOPPID, raw GPS filename
 
 %Preallocate space and format table
-GPSFiles=NaN(size(MetaDataAll,1),2);
-GPSFiles=array2table(GPSFiles,'VariableNames',{'TOPPID','filename'});
-GPSFiles.filename=string(GPSFiles.filename);
+GPSFiles=table('Size',[size(MetaDataAll,1),3],'VariableNames',{'TOPPID','filename','folder'},...
+    'VariableTypes',{'double','string','string'});
 
 %Find all files with FastGPS in filename
 files=dir('F:\Data\Eseal_Data\Tracking Diving 2004-2020\**\*FastGPS.csv');
 for i=1:size(files,1)
     %Pull TOPPID directly from filename
-    GPSFiles.TOPPID(i)=str2double(strtok(files(i).name,'_'));
-    GPSFiles.filename(i)=files(i).name;
+    TOPPID=str2double(strtok(files(i).name,'_'));
+    if sum(TagMetaDataAll.TOPPID==TOPPID)>0
+        GPSFiles.TOPPID(i)=TOPPID;
+        GPSFiles.filename(i)=files(i).name;
+        GPSfiles.folder(i)=files(i).folder;
+    end
+    clear TOPPID
 end
 
-%Remove extra rows in table
+%Remove extra rows in table and sort by TOPPID (ascending order)
+GPSFiles(GPSFiles.TOPPID==0,:)=[];
 GPSFiles=sortrows(GPSFiles);
-GPSFiles(isnan(GPSFiles.TOPPID),:)=[];
 clear files
 
 %% TrackCleanFiles: TOPPID, clean pre-processed track files
 
 %Preallocate space and format table
-TrackCleanFiles=NaN(size(MetaDataAll,1),2);
-TrackCleanFiles=array2table(TrackCleanFiles,'VariableNames',{'TOPPID','filename'});
-TrackCleanFiles.filename=string(TrackCleanFiles.filename);
+TrackCleanFiles=table('Size',[size(MetaDataAll,1),3],'VariableNames',{'TOPPID','filename','folder'},...
+    'VariableTypes',{'double','string','string'});
 
 %Find all files with raw_pre_foieGras in filename
 files=dir('F:\Data\Eseal_Data\Tracking Diving 2004-2020\**\*raw_pre_foieGras.csv');
 for i=1:size(files,1)
     %Pull TOPPID directly from filename
-    TrackCleanFiles.TOPPID(i)=str2double(strtok(files(i).name,'_'));
-    TrackCleanFiles.filename(i)=files(i).name;
+    TOPPID=str2double(strtok(files(i).name,'_'));
+    if sum(TagMetaDataAll.TOPPID==TOPPID)>0
+        TrackCleanFiles.TOPPID(i)=TOPPID;
+        TrackCleanFiles.filename(i)=files(i).name;
+        TrackCleanFiles.folder(i)=files(i).folder;
+    end
+    clear TOPPID
 end
 
-%Remove extra rows in table
+%Remove extra rows in table and sort by TOPPID (ascending order)
+TrackCleanFiles(TrackCleanFiles.TOPPID==0,:)=[];
 TrackCleanFiles=sortrows(TrackCleanFiles);
-TrackCleanFiles(isnan(TrackCleanFiles.TOPPID),:)=[];
 clear files
-
 %% TDRRawFiles: TOPPID, raw data filename
 
 %Preallocate space and format table
-TDRRawFiles=NaN(size(MetaDataAll,1),2);
-TDRRawFiles=array2table(TDRRawFiles,'VariableNames',{'TOPPID','filename'});
-TDRRawFiles.filename=string(TDRRawFiles.filename);
+TDRRawFiles=table('Size',[size(MetaDataAll,1),3],'VariableNames',{'TOPPID','filename','folder'},...
+    'VariableTypes',{'double','string','string'});
 
 %Find all files with Archive in filename
 files1=dir('F:\Data\Eseal_Data\Tracking Diving 2004-2020\TDRs\**\*Archive.csv');
@@ -109,30 +126,30 @@ files3=dir('F:\Data\Eseal_Data\Tracking Diving 2004-2020\TDRs\**\*_Kami_tdr.csv'
 files4=dir('F:\Data\Eseal_Data\Tracking Diving 2004-2020\TDRs\**\*_Stroke_tdr.csv');
 files=[files1; files2; files3; files4];
 for i=1:size(files,1)
-    %Check if file is for TDR1ID in TagMetaDataAll
+    %Pull TOPPID directly from filename
     TOPPID=str2double(strtok(files(i).name,'_'));
     if sum(TagMetaDataAll.TOPPID==TOPPID)>0
+        %Check if file is for TDR1ID in TagMetaDataAll
         if sum(strfind(files(i).name,TagMetaDataAll.TDR1ID(TagMetaDataAll.TOPPID==TOPPID)),...
                 strfind(files(i).name,TagMetaDataAll.TDR1Type(TagMetaDataAll.TOPPID==TOPPID)))>=1 
             TDRRawFiles.filename(i)=files(i).name;    
-            %Pull TOPPID directly from filename
             TDRRawFiles.TOPPID(i)=TOPPID;
+            TDRRawFiles.folder(i)=files(i).folder;  
         end 
     end
     clear TOPPID
 end
 
-%Sort by TOPPID and remove extra rows in table
+%Remove extra rows in table and sort by TOPPID (ascending order)
+TDRRawFiles(TDRRawFiles.TOPPID==0,:)=[];
 TDRRawFiles=sortrows(TDRRawFiles);
-TDRRawFiles(isnan(TDRRawFiles.TOPPID),:)=[];
 clear files files1 files2 files3 files4
 
 %% TDRCleanFiles: TOPPID, pre-processed filename (*_DAprep_full.csv)
 
 %Preallocate space and format table
-TDRCleanFiles=NaN(size(MetaDataAll,1),2);
-TDRCleanFiles=array2table(TDRCleanFiles,'VariableNames',{'TOPPID','filename'});
-TDRCleanFiles.filename=string(TDRCleanFiles.filename);
+TDRCleanFiles=table('Size',[size(MetaDataAll,1),3],'VariableNames',{'TOPPID','filename','folder'},...
+    'VariableTypes',{'double','string','string'});
 
 %Find all files with _full in filename
 files=dir('F:\Data\Eseal_Data\Tracking Diving 2004-2020\TDRs\**\*_full.csv');
@@ -144,23 +161,23 @@ for i=1:size(files,1)
         if sum(strfind(files(i).name,TagMetaDataAll.TDR1ID(TagMetaDataAll.TOPPID==TOPPID)),...
                 strfind(files(i).name,TagMetaDataAll.TDR1Type(TagMetaDataAll.TOPPID==TOPPID)))>=1 
             TDRCleanFiles.filename(i)=files(i).name;    
+            TDRCleanFiles.folder(i)=files(i).folder;    
             TDRCleanFiles.TOPPID(i)=TOPPID;
         end 
     end
     clear TOPPID
 end
 
-%Remove extra rows in table
+%Remove extra rows in table and sort by TOPPID (ascending order)
+TDRCleanFiles(TDRCleanFiles.TOPPID==0,:)=[];
 TDRCleanFiles=sortrows(TDRCleanFiles);
-TDRCleanFiles(isnan(TDRCleanFiles.TOPPID),:)=[];
 clear files
 
 %% TDRZOCFiles: TOPPID, ZOC output filename (*_full_iknos_raw.csv)
 
 %Preallocate space and format table
-TDRZOCFiles=NaN(size(MetaDataAll,1),2);
-TDRZOCFiles=array2table(TDRZOCFiles,'VariableNames',{'TOPPID','filename'});
-TDRZOCFiles.filename=string(TDRZOCFiles.filename);
+TDRZOCFiles=table('Size',[size(MetaDataAll,1),3],'VariableNames',{'TOPPID','filename','folder'},...
+    'VariableTypes',{'double','string','string'});
 
 %Find all files with _full_iknos_raw_data in filename
 files=dir('F:\Data\Eseal_Data\Tracking Diving 2004-2020\TDRs\**\*_full_iknos_raw_data.csv');
@@ -170,25 +187,25 @@ for i=1:size(files,1)
     if sum(TagMetaDataAll.TOPPID==TOPPID)>0
         %Check if file is for TDR1ID in TagMetaDataAll
         if sum(strfind(files(i).name,TagMetaDataAll.TDR1ID(TagMetaDataAll.TOPPID==TOPPID)),...
-                strfind(files(i).name,TagMetaDataAll.TDR1Type(TagMetaDataAll.TOPPID==TOPPID)))>=1 
-            TDRZOCFiles.filename(i)=files(i).name;    
+                strfind(files(i).name,TagMetaDataAll.TDR1Type(TagMetaDataAll.TOPPID==TOPPID)))>=1
+            TDRZOCFiles.filename(i)=files(i).name;
+            TDRZOCFiles.folder(i)=files(i).folder;
             TDRZOCFiles.TOPPID(i)=TOPPID;
-        end 
+        end
     end
     clear TOPPID
 end
 
-%Remove extra rows in table
+%Remove extra rows in table and sort by TOPPID (ascending order)
+TDRZOCFiles(TDRZOCFiles.TOPPID==0,:)=[];
 TDRZOCFiles=sortrows(TDRZOCFiles);
-TDRZOCFiles(isnan(TDRZOCFiles.TOPPID),:)=[];
 clear files
 
 %% TDRDiveStatFiles: TOPPID, Dive Stat filename (_full_iknos_DiveStat.csv)
 
 %Preallocate space and format table
-TDRDiveStatFiles=NaN(size(MetaDataAll,1),2);
-TDRDiveStatFiles=array2table(TDRDiveStatFiles,'VariableNames',{'TOPPID','filename'});
-TDRDiveStatFiles.filename=string(TDRDiveStatFiles.filename);
+TDRDiveStatFiles=table('Size',[size(MetaDataAll,1),3],'VariableNames',{'TOPPID','filename','folder'},...
+    'VariableTypes',{'double','string','string'});
 
 %Find all files with _full_iknos_DiveStat in filename
 files=dir('F:\Data\Eseal_Data\Tracking Diving 2004-2020\TDRs\**\*_full_iknos_DiveStat.csv');
@@ -200,23 +217,23 @@ for i=1:size(files,1)
         if sum(strfind(files(i).name,TagMetaDataAll.TDR1ID(TagMetaDataAll.TOPPID==TOPPID)),...
                 strfind(files(i).name,TagMetaDataAll.TDR1Type(TagMetaDataAll.TOPPID==TOPPID)))>=1 
             TDRDiveStatFiles.filename(i)=files(i).name;    
+            TDRDiveStatFiles.folder(i)=files(i).folder;    
             TDRDiveStatFiles.TOPPID(i)=TOPPID;
         end 
     end
     clear TOPPID
 end
 
-%Remove extra rows in table
+%Remove extra rows in table and sort by TOPPID (ascending order)
+TDRDiveStatFiles(TDRDiveStatFiles.TOPPID==0,:)=[];
 TDRDiveStatFiles=sortrows(TDRDiveStatFiles);
-TDRDiveStatFiles(isnan(TDRDiveStatFiles.TOPPID),:)=[];
 clear files
 
 %% TDRSubDiveStatFiles: TOPPID, Dive Stat filename (_SubSample_iknos_DiveStat.csv)
 
 %Preallocate space and format table
-TDRSubDiveStatFiles=NaN(size(MetaDataAll,1),2);
-TDRSubDiveStatFiles=array2table(TDRSubDiveStatFiles,'VariableNames',{'TOPPID','filename'});
-TDRSubDiveStatFiles.filename=string(TDRSubDiveStatFiles.filename);
+TDRSubDiveStatFiles=table('Size',[size(MetaDataAll,1),3],'VariableNames',{'TOPPID','filename','folder'},...
+    'VariableTypes',{'double','string','string'});
 
 %Find all files with _SubSample_iknos_DiveStat in filename
 files=dir('F:\Data\Eseal_Data\Tracking Diving 2004-2020\TDRs\**\*_SubSample_iknos_DiveStat.csv');
@@ -228,23 +245,23 @@ for i=1:size(files,1)
         if sum(strfind(files(i).name,TagMetaDataAll.TDR1ID(TagMetaDataAll.TOPPID==TOPPID)),...
                 strfind(files(i).name,TagMetaDataAll.TDR1Type(TagMetaDataAll.TOPPID==TOPPID)))>=1 
             TDRSubDiveStatFiles.filename(i)=files(i).name;    
+            TDRSubDiveStatFiles.folder(i)=files(i).folder;    
             TDRSubDiveStatFiles.TOPPID(i)=TOPPID;
         end 
     end
     clear TOPPID
 end
 
-%Remove extra rows in table
+%Remove extra rows in table and sort by TOPPID (ascending order)
+TDRSubDiveStatFiles(TDRSubDiveStatFiles.TOPPID==0,:)=[];
 TDRSubDiveStatFiles=sortrows(TDRSubDiveStatFiles);
-TDRSubDiveStatFiles(isnan(TDRSubDiveStatFiles.TOPPID),:)=[];
 clear files
 
 %% TDR2RawFiles: TOPPID, raw data filename
 
 %Preallocate space and format table
-TDR2RawFiles=NaN(size(MetaDataAll,1),2);
-TDR2RawFiles=array2table(TDR2RawFiles,'VariableNames',{'TOPPID','filename'});
-TDR2RawFiles.filename=string(TDR2RawFiles.filename);
+TDR2RawFiles=table('Size',[size(MetaDataAll,1),3],'VariableNames',{'TOPPID','filename','folder'},...
+    'VariableTypes',{'double','string','string'});
 
 %Find all files with Archive in filename
 files1=dir('F:\Data\Eseal_Data\Tracking Diving 2004-2020\TDRs\**\*Archive.csv');
@@ -256,30 +273,30 @@ files3=dir('F:\Data\Eseal_Data\Tracking Diving 2004-2020\TDRs\**\*_Kami_tdr.csv'
 files4=dir('F:\Data\Eseal_Data\Tracking Diving 2004-2020\TDRs\**\*_Stroke_tdr.csv');
 files=[files1; files2; files3; files4];
 for i=1:size(files,1)
-    %Check if file is for TDR1ID in TagMetaDataAll
+    %Pull TOPPID directly from filename
     TOPPID=str2double(strtok(files(i).name,'_'));
     if sum(TagMetaDataAll.TOPPID==TOPPID)>0
+        %Check if file is for TDR1ID in TagMetaDataAll
         if sum(strfind(files(i).name,TagMetaDataAll.TDR2ID(TagMetaDataAll.TOPPID==TOPPID)),...
                 strfind(files(i).name,TagMetaDataAll.TDR2Type(TagMetaDataAll.TOPPID==TOPPID)))>=1 
             TDR2RawFiles.filename(i)=files(i).name;    
-            %Pull TOPPID directly from filename
             TDR2RawFiles.TOPPID(i)=TOPPID;
+            TDR2RawFiles.folder(i)=files(i).folder;  
         end 
     end
     clear TOPPID
 end
 
-%Sort by TOPPID and remove extra rows in table
+%Remove extra rows in table and sort by TOPPID (ascending order)
+TDR2RawFiles(TDR2RawFiles.TOPPID==0,:)=[];
 TDR2RawFiles=sortrows(TDR2RawFiles);
-TDR2RawFiles(isnan(TDR2RawFiles.TOPPID),:)=[];
-clear files
+clear files files1 files2 files3 files4
 
 %% TDR2CleanFiles: TOPPID, pre-processed filename (*_DAprep_full.csv)
 
 %Preallocate space and format table
-TDR2CleanFiles=NaN(size(MetaDataAll,1),2);
-TDR2CleanFiles=array2table(TDR2CleanFiles,'VariableNames',{'TOPPID','filename'});
-TDR2CleanFiles.filename=string(TDR2CleanFiles.filename);
+TDR2CleanFiles=table('Size',[size(MetaDataAll,1),3],'VariableNames',{'TOPPID','filename','folder'},...
+    'VariableTypes',{'double','string','string'});
 
 %Find all files with _full in filename
 files=dir('F:\Data\Eseal_Data\Tracking Diving 2004-2020\TDRs\**\*_full.csv');
@@ -291,23 +308,23 @@ for i=1:size(files,1)
         if sum(strfind(files(i).name,TagMetaDataAll.TDR2ID(TagMetaDataAll.TOPPID==TOPPID)),...
                 strfind(files(i).name,TagMetaDataAll.TDR2Type(TagMetaDataAll.TOPPID==TOPPID)))>=1 
             TDR2CleanFiles.filename(i)=files(i).name;    
+            TDR2CleanFiles.folder(i)=files(i).folder;    
             TDR2CleanFiles.TOPPID(i)=TOPPID;
         end 
     end
     clear TOPPID
 end
 
-%Remove extra rows in table
+%Remove extra rows in table and sort by TOPPID (ascending order)
+TDR2CleanFiles(TDR2CleanFiles.TOPPID==0,:)=[];
 TDR2CleanFiles=sortrows(TDR2CleanFiles);
-TDR2CleanFiles(isnan(TDR2CleanFiles.TOPPID),:)=[];
 clear files
 
 %% TDR2ZOCFiles: TOPPID, ZOC output filename (*_full_iknos_raw.csv)
 
 %Preallocate space and format table
-TDR2ZOCFiles=NaN(size(MetaDataAll,1),2);
-TDR2ZOCFiles=array2table(TDR2ZOCFiles,'VariableNames',{'TOPPID','filename'});
-TDR2ZOCFiles.filename=string(TDR2ZOCFiles.filename);
+TDR2ZOCFiles=table('Size',[size(MetaDataAll,1),3],'VariableNames',{'TOPPID','filename','folder'},...
+    'VariableTypes',{'double','string','string'});
 
 %Find all files with _full_iknos_raw_data in filename
 files=dir('F:\Data\Eseal_Data\Tracking Diving 2004-2020\TDRs\**\*_full_iknos_raw_data.csv');
@@ -317,25 +334,26 @@ for i=1:size(files,1)
     if sum(TagMetaDataAll.TOPPID==TOPPID)>0
         %Check if file is for TDR1ID in TagMetaDataAll
         if sum(strfind(files(i).name,TagMetaDataAll.TDR2ID(TagMetaDataAll.TOPPID==TOPPID)),...
-                strfind(files(i).name,TagMetaDataAll.TDR2Type(TagMetaDataAll.TOPPID==TOPPID)))>=1 
-            TDR2ZOCFiles.filename(i)=files(i).name;    
+                strfind(files(i).name,TagMetaDataAll.TDR2Type(TagMetaDataAll.TOPPID==TOPPID)))>=1
+            TDR2ZOCFiles.filename(i)=files(i).name;
+            TDR2ZOCFiles.folder(i)=files(i).folder;
             TDR2ZOCFiles.TOPPID(i)=TOPPID;
-        end 
+        end
     end
     clear TOPPID
 end
 
-%Remove extra rows in table
+%Remove extra rows in table and sort by TOPPID (ascending order)
+TDR2ZOCFiles(TDR2ZOCFiles.TOPPID==0,:)=[];
 TDR2ZOCFiles=sortrows(TDR2ZOCFiles);
-TDR2ZOCFiles(isnan(TDR2ZOCFiles.TOPPID),:)=[];
 clear files
 
 %% TDR2DiveStatFiles: TOPPID, Dive Stat filename (_full_iknos_DiveStat.csv)
 
 %Preallocate space and format table
-TDR2DiveStatFiles=NaN(size(MetaDataAll,1),2);
-TDR2DiveStatFiles=array2table(TDR2DiveStatFiles,'VariableNames',{'TOPPID','filename'});
-TDR2DiveStatFiles.filename=string(TDR2DiveStatFiles.filename);
+TDR2DiveStatFiles=table('Size',[size(MetaDataAll,1),3],'VariableNames',{'TOPPID','filename','folder'},...
+    'VariableTypes',{'double','string','string'});
+
 
 %Find all files with _full_iknos_DiveStat in filename
 files=dir('F:\Data\Eseal_Data\Tracking Diving 2004-2020\TDRs\**\*_full_iknos_DiveStat.csv');
@@ -343,55 +361,55 @@ for i=1:size(files,1)
    %Pull TOPPID directly from filename
     TOPPID=str2double(strtok(files(i).name,'_'));
     if sum(TagMetaDataAll.TOPPID==TOPPID)>0
-        %Check if file is for TDR2ID in TagMetaDataAll
+        %Check if file is for TDR1ID in TagMetaDataAll
         if sum(strfind(files(i).name,TagMetaDataAll.TDR2ID(TagMetaDataAll.TOPPID==TOPPID)),...
                 strfind(files(i).name,TagMetaDataAll.TDR2Type(TagMetaDataAll.TOPPID==TOPPID)))>=1 
             TDR2DiveStatFiles.filename(i)=files(i).name;    
+            TDR2DiveStatFiles.folder(i)=files(i).folder;    
             TDR2DiveStatFiles.TOPPID(i)=TOPPID;
         end 
     end
     clear TOPPID
 end
 
-%Remove extra rows in table
+%Remove extra rows in table and sort by TOPPID (ascending order)
+TDR2DiveStatFiles(TDR2DiveStatFiles.TOPPID==0,:)=[];
 TDR2DiveStatFiles=sortrows(TDR2DiveStatFiles);
-TDR2DiveStatFiles(isnan(TDR2DiveStatFiles.TOPPID),:)=[];
 clear files
 
 %% TDR2SubDiveStatFiles: TOPPID, Dive Stat filename (_SubSample_iknos_DiveStat.csv)
 
 %Preallocate space and format table
-TDR2SubDiveStatFiles=NaN(size(MetaDataAll,1),2);
-TDR2SubDiveStatFiles=array2table(TDR2SubDiveStatFiles,'VariableNames',{'TOPPID','filename'});
-TDR2SubDiveStatFiles.filename=string(TDR2SubDiveStatFiles.filename);
+TDR2SubDiveStatFiles=table('Size',[size(MetaDataAll,1),3],'VariableNames',{'TOPPID','filename','folder'},...
+    'VariableTypes',{'double','string','string'});
 
-%Find all files with _full_iknos_DiveStat in filename
+%Find all files with _SubSample_iknos_DiveStat in filename
 files=dir('F:\Data\Eseal_Data\Tracking Diving 2004-2020\TDRs\**\*_SubSample_iknos_DiveStat.csv');
 for i=1:size(files,1)
    %Pull TOPPID directly from filename
     TOPPID=str2double(strtok(files(i).name,'_'));
     if sum(TagMetaDataAll.TOPPID==TOPPID)>0
-        %Check if file is for TDR2ID in TagMetaDataAll
+        %Check if file is for TDR1ID in TagMetaDataAll
         if sum(strfind(files(i).name,TagMetaDataAll.TDR2ID(TagMetaDataAll.TOPPID==TOPPID)),...
                 strfind(files(i).name,TagMetaDataAll.TDR2Type(TagMetaDataAll.TOPPID==TOPPID)))>=1 
             TDR2SubDiveStatFiles.filename(i)=files(i).name;    
+            TDR2SubDiveStatFiles.folder(i)=files(i).folder;    
             TDR2SubDiveStatFiles.TOPPID(i)=TOPPID;
         end 
     end
     clear TOPPID
 end
 
-%Remove extra rows in table
+%Remove extra rows in table and sort by TOPPID (ascending order)
+TDR2SubDiveStatFiles(TDR2SubDiveStatFiles.TOPPID==0,:)=[];
 TDR2SubDiveStatFiles=sortrows(TDR2SubDiveStatFiles);
-TDR2SubDiveStatFiles(isnan(TDR2SubDiveStatFiles.TOPPID),:)=[];
 clear files
 
 %% TDR3RawFiles: TOPPID, raw data filename
 
 %Preallocate space and format table
-TDR3RawFiles=NaN(size(MetaDataAll,1),2);
-TDR3RawFiles=array2table(TDR3RawFiles,'VariableNames',{'TOPPID','filename'});
-TDR3RawFiles.filename=string(TDR3RawFiles.filename);
+TDR3RawFiles=table('Size',[size(MetaDataAll,1),3],'VariableNames',{'TOPPID','filename','folder'},...
+    'VariableTypes',{'double','string','string'});
 
 %Find all files with Archive in filename
 files1=dir('F:\Data\Eseal_Data\Tracking Diving 2004-2020\TDRs\**\*Archive.csv');
@@ -403,30 +421,30 @@ files3=dir('F:\Data\Eseal_Data\Tracking Diving 2004-2020\TDRs\**\*_Kami_tdr.csv'
 files4=dir('F:\Data\Eseal_Data\Tracking Diving 2004-2020\TDRs\**\*_Stroke_tdr.csv');
 files=[files1; files2; files3; files4];
 for i=1:size(files,1)
-    %Check if file is for TDR3ID in TagMetaDataAll
+    %Pull TOPPID directly from filename
     TOPPID=str2double(strtok(files(i).name,'_'));
     if sum(TagMetaDataAll.TOPPID==TOPPID)>0
+        %Check if file is for TDR1ID in TagMetaDataAll
         if sum(strfind(files(i).name,TagMetaDataAll.TDR3ID(TagMetaDataAll.TOPPID==TOPPID)),...
                 strfind(files(i).name,TagMetaDataAll.TDR3Type(TagMetaDataAll.TOPPID==TOPPID)))>=1 
             TDR3RawFiles.filename(i)=files(i).name;    
-            %Pull TOPPID directly from filename
             TDR3RawFiles.TOPPID(i)=TOPPID;
+            TDR3RawFiles.folder(i)=files(i).folder;  
         end 
     end
     clear TOPPID
 end
 
-%Sort by TOPPID and remove extra rows in table
+%Remove extra rows in table and sort by TOPPID (ascending order)
+TDR3RawFiles(TDR3RawFiles.TOPPID==0,:)=[];
 TDR3RawFiles=sortrows(TDR3RawFiles);
-TDR3RawFiles(isnan(TDR3RawFiles.TOPPID),:)=[];
-clear files
+clear files files1 files2 files3 files4
 
 %% TDR3CleanFiles: TOPPID, pre-processed filename (*_DAprep_full.csv)
 
 %Preallocate space and format table
-TDR3CleanFiles=NaN(size(MetaDataAll,1),2);
-TDR3CleanFiles=array2table(TDR3CleanFiles,'VariableNames',{'TOPPID','filename'});
-TDR3CleanFiles.filename=string(TDR3CleanFiles.filename);
+TDR3CleanFiles=table('Size',[size(MetaDataAll,1),3],'VariableNames',{'TOPPID','filename','folder'},...
+    'VariableTypes',{'double','string','string'});
 
 %Find all files with _full in filename
 files=dir('F:\Data\Eseal_Data\Tracking Diving 2004-2020\TDRs\**\*_full.csv');
@@ -434,27 +452,27 @@ for i=1:size(files,1)
     %Pull TOPPID directly from filename
     TOPPID=str2double(strtok(files(i).name,'_'));
     if sum(TagMetaDataAll.TOPPID==TOPPID)>0
-        %Check if file is for TDR3ID in TagMetaDataAll
+        %Check if file is for TDR1ID in TagMetaDataAll
         if sum(strfind(files(i).name,TagMetaDataAll.TDR3ID(TagMetaDataAll.TOPPID==TOPPID)),...
                 strfind(files(i).name,TagMetaDataAll.TDR3Type(TagMetaDataAll.TOPPID==TOPPID)))>=1 
             TDR3CleanFiles.filename(i)=files(i).name;    
+            TDR3CleanFiles.folder(i)=files(i).folder;    
             TDR3CleanFiles.TOPPID(i)=TOPPID;
         end 
     end
     clear TOPPID
 end
 
-%Remove extra rows in table
+%Remove extra rows in table and sort by TOPPID (ascending order)
+TDR3CleanFiles(TDR3CleanFiles.TOPPID==0,:)=[];
 TDR3CleanFiles=sortrows(TDR3CleanFiles);
-TDR3CleanFiles(isnan(TDR3CleanFiles.TOPPID),:)=[];
 clear files
 
 %% TDR3ZOCFiles: TOPPID, ZOC output filename (*_full_iknos_raw.csv)
 
 %Preallocate space and format table
-TDR3ZOCFiles=NaN(size(MetaDataAll,1),2);
-TDR3ZOCFiles=array2table(TDR3ZOCFiles,'VariableNames',{'TOPPID','filename'});
-TDR3ZOCFiles.filename=string(TDR3ZOCFiles.filename);
+TDR3ZOCFiles=table('Size',[size(MetaDataAll,1),3],'VariableNames',{'TOPPID','filename','folder'},...
+    'VariableTypes',{'double','string','string'});
 
 %Find all files with _full_iknos_raw_data in filename
 files=dir('F:\Data\Eseal_Data\Tracking Diving 2004-2020\TDRs\**\*_full_iknos_raw_data.csv');
@@ -462,27 +480,28 @@ for i=1:size(files,1)
    %Pull TOPPID directly from filename
     TOPPID=str2double(strtok(files(i).name,'_'));
     if sum(TagMetaDataAll.TOPPID==TOPPID)>0
-        %Check if file is for TDR3ID in TagMetaDataAll
+        %Check if file is for TDR1ID in TagMetaDataAll
         if sum(strfind(files(i).name,TagMetaDataAll.TDR3ID(TagMetaDataAll.TOPPID==TOPPID)),...
-                strfind(files(i).name,TagMetaDataAll.TDR3Type(TagMetaDataAll.TOPPID==TOPPID)))>=1 
-            TDR3ZOCFiles.filename(i)=files(i).name;    
+                strfind(files(i).name,TagMetaDataAll.TDR3Type(TagMetaDataAll.TOPPID==TOPPID)))>=1
+            TDR3ZOCFiles.filename(i)=files(i).name;
+            TDR3ZOCFiles.folder(i)=files(i).folder;
             TDR3ZOCFiles.TOPPID(i)=TOPPID;
-        end 
+        end
     end
     clear TOPPID
 end
 
-%Remove extra rows in table
+%Remove extra rows in table and sort by TOPPID (ascending order)
+TDR3ZOCFiles(TDR3ZOCFiles.TOPPID==0,:)=[];
 TDR3ZOCFiles=sortrows(TDR3ZOCFiles);
-TDR3ZOCFiles(isnan(TDR3ZOCFiles.TOPPID),:)=[];
 clear files
 
 %% TDR3DiveStatFiles: TOPPID, Dive Stat filename (_full_iknos_DiveStat.csv)
 
 %Preallocate space and format table
-TDR3DiveStatFiles=NaN(size(MetaDataAll,1),2);
-TDR3DiveStatFiles=array2table(TDR3DiveStatFiles,'VariableNames',{'TOPPID','filename'});
-TDR3DiveStatFiles.filename=string(TDR3DiveStatFiles.filename);
+TDR3DiveStatFiles=table('Size',[size(MetaDataAll,1),3],'VariableNames',{'TOPPID','filename','folder'},...
+    'VariableTypes',{'double','string','string'});
+
 
 %Find all files with _full_iknos_DiveStat in filename
 files=dir('F:\Data\Eseal_Data\Tracking Diving 2004-2020\TDRs\**\*_full_iknos_DiveStat.csv');
@@ -490,47 +509,47 @@ for i=1:size(files,1)
    %Pull TOPPID directly from filename
     TOPPID=str2double(strtok(files(i).name,'_'));
     if sum(TagMetaDataAll.TOPPID==TOPPID)>0
-        %Check if file is for TDR3ID in TagMetaDataAll
+        %Check if file is for TDR1ID in TagMetaDataAll
         if sum(strfind(files(i).name,TagMetaDataAll.TDR3ID(TagMetaDataAll.TOPPID==TOPPID)),...
                 strfind(files(i).name,TagMetaDataAll.TDR3Type(TagMetaDataAll.TOPPID==TOPPID)))>=1 
             TDR3DiveStatFiles.filename(i)=files(i).name;    
+            TDR3DiveStatFiles.folder(i)=files(i).folder;    
             TDR3DiveStatFiles.TOPPID(i)=TOPPID;
         end 
     end
     clear TOPPID
 end
 
-%Remove extra rows in table
+%Remove extra rows in table and sort by TOPPID (ascending order)
+TDR3DiveStatFiles(TDR3DiveStatFiles.TOPPID==0,:)=[];
 TDR3DiveStatFiles=sortrows(TDR3DiveStatFiles);
-TDR3DiveStatFiles(isnan(TDR3DiveStatFiles.TOPPID),:)=[];
 clear files
-
 %% TDR3SubDiveStatFiles: TOPPID, Dive Stat filename (_SubSample_iknos_DiveStat.csv)
 
 %Preallocate space and format table
-TDR3SubDiveStatFiles=NaN(size(MetaDataAll,1),2);
-TDR3SubDiveStatFiles=array2table(TDR3SubDiveStatFiles,'VariableNames',{'TOPPID','filename'});
-TDR3SubDiveStatFiles.filename=string(TDR3SubDiveStatFiles.filename);
+TDR3SubDiveStatFiles=table('Size',[size(MetaDataAll,1),3],'VariableNames',{'TOPPID','filename','folder'},...
+    'VariableTypes',{'double','string','string'});
 
-%Find all files with _full_iknos_DiveStat in filename
+%Find all files with _SubSample_iknos_DiveStat in filename
 files=dir('F:\Data\Eseal_Data\Tracking Diving 2004-2020\TDRs\**\*_SubSample_iknos_DiveStat.csv');
 for i=1:size(files,1)
    %Pull TOPPID directly from filename
     TOPPID=str2double(strtok(files(i).name,'_'));
     if sum(TagMetaDataAll.TOPPID==TOPPID)>0
-        %Check if file is for TDR3ID in TagMetaDataAll
+        %Check if file is for TDR1ID in TagMetaDataAll
         if sum(strfind(files(i).name,TagMetaDataAll.TDR3ID(TagMetaDataAll.TOPPID==TOPPID)),...
                 strfind(files(i).name,TagMetaDataAll.TDR3Type(TagMetaDataAll.TOPPID==TOPPID)))>=1 
             TDR3SubDiveStatFiles.filename(i)=files(i).name;    
+            TDR3SubDiveStatFiles.folder(i)=files(i).folder;    
             TDR3SubDiveStatFiles.TOPPID(i)=TOPPID;
         end 
     end
     clear TOPPID
 end
 
-%Remove extra rows in table
+%Remove extra rows in table and sort by TOPPID (ascending order)
+TDR3SubDiveStatFiles(TDR3SubDiveStatFiles.TOPPID==0,:)=[];
 TDR3SubDiveStatFiles=sortrows(TDR3SubDiveStatFiles);
-TDR3SubDiveStatFiles(isnan(TDR3SubDiveStatFiles.TOPPID),:)=[];
 clear files
 
 save('All_Filenames.mat','TrackFoieGrasFiles','ArgosFiles','GPSFiles','TrackCleanFiles',...
