@@ -10,7 +10,7 @@
 %Truncates data to startstop for non-Little Leonardo data
 
 %Requires IKNOS toolbox
-%Requires functions: yt_iknos_da_RRH
+%Requires functions: iknos_da
 %                    DA_data_compiler_RRH
 %                    yt_findclosest_RRH
 
@@ -341,32 +341,54 @@ function output=change_format_DA2_RRH_TV4_2(filename,Start,End,TOPPID)
     %Step 9: Run IKNOS DA - new ZocMinMax with DEFAULT ZOC params
     if minsurface<-10
         if size(strfind(filename,'-out-Archive'),1)>0
-            yt_iknos_da_RRH([strtok(filename,'-') '_DAprep_full.csv'],DAstring,...
+            iknos_da([strtok(filename,'-') '_DAprep_full.csv'],DAstring,...
                 32/SamplingRate,15/DepthRes,20,'wantfile_yes',...
                 'ZocMinMax',[minsurface-10,2500]);
         else
-            yt_iknos_da_RRH([strtok(filename,'.') '_DAprep_full.csv'],DAstring,...
+            iknos_da([strtok(filename,'.') '_DAprep_full.csv'],DAstring,...
                 32/SamplingRate,15/DepthRes,20,'wantfile_yes',...
                 'ZocMinMax',[minsurface-10,2500]);
         end
     else
         if size(strfind(filename,'-out-Archive'),1)>0
-            yt_iknos_da_RRH([strtok(filename,'-') '_DAprep_full.csv'],DAstring,...
+            iknos_da([strtok(filename,'-') '_DAprep_full.csv'],DAstring,...
                 32/SamplingRate,15/DepthRes,20,'wantfile_yes');
         else
-            yt_iknos_da_RRH([strtok(filename,'.') '_DAprep_full.csv'],DAstring,...
+            iknos_da([strtok(filename,'.') '_DAprep_full.csv'],DAstring,...
                 32/SamplingRate,15/DepthRes,20,'wantfile_yes');
         end
     end
 
 %     %Step 9: Run IKNOS DA    
 %         if size(strfind(filename,'-out-Archive'),1)>0
-%             yt_iknos_da_RRH([strtok(filename,'-') '_DAprep_full.csv'],DAstring,...
+%             iknos_da([strtok(filename,'-') '_DAprep_full.csv'],DAstring,...
 %             32/SamplingRate,15/DepthRes,20,'wantfile_yes','ZocWindow',2,...
 %             'ZocWidthForMode',15/DepthRes,'ZocSurfWidth',10,'ZocDiveSurf',15,'ZocMinMax',[-10,2200]);
 %         else
-%             yt_iknos_da_RRH([strtok(filename,'.') '_DAprep_full.csv'],DAstring,...
+%             iknos_da([strtok(filename,'.') '_DAprep_full.csv'],DAstring,...
 %             32/SamplingRate,15/DepthRes,20,'wantfile_yes','ZocWindow',2,...
 %             'ZocWidthForMode',15,'ZocSurfWidth',10,'ZocDiveSurf',15,'ZocMinMax',[-10,2200]);
 %         end
+
+%Step 10: Plot and save QC figs
+rawzocdatafile=dir([filename '_DAprep_full_iknos_raw_data.csv']);
+rawzocdata=readtable(rawzocdatafile.name,'HeaderLines',0,'ReadVariableNames',true);
+rawzocdata.Time=datetime(rawzocdata.time,'ConvertFrom','datenum');
+
+DiveStatfile=dir([filename '_DAprep_full_iknos_DiveStat.csv']); 
+DiveStat=readtable(DiveStat.name,'HeaderLines',0,'ReadVariableNames',true);
+DiveStat.Time=datetime(DiveStat.Year,DiveStat.Month,DiveStat.Day,DiveStat.Hour,DiveStat.Min,DiveStat.Sec);
+
+figure(1);
+plot(rawzocdata.Time,rawzocdata.depth);
+hold on; set(gca,'YDir','reverse');
+plot(rawzocdata.Time,rawzocdata.CorrectedDepth,'b');
+scatter(DiveStat.Time,zeros(size(DiveStat,1),1),[],'go');
+scatter(DiveStat.Time+seconds(DiveStat.Dduration),zeros(size(DiveStat,1),1),[],'ro');
+text(DiveStat.Time,DiveStat.Maxdepth,num2str(DiveStat.DiveNumber),'Color','b');
+legend({'raw','zoc','Start dive','End dive'});
+title(['Raw vs ZOC: ' num2str(MetaDataAll.TOPPID(row))]);
+savefig([num2str(MetaDataAll.TOPPID(row)) '_Raw_ZOC.fig']); 
+close; 
+
 end

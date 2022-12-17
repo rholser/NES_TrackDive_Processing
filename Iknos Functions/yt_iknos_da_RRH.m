@@ -58,7 +58,7 @@ function YT_IKNOS_DA_RRH(inputfile,dataformat,timemultiple,depthmultiple,depth_z
 %       values. A brief description follows in the format:
 %       'parameter' , default value
 %
-% For input in yt_zoc
+% For input in zoc
 %
 %     'ZocMinMax'  ,  [-10 2500]  % values out of this depth range (m) will be trimmed
 %     'ZocWindow'  ,  'auto'   % see the function for details
@@ -68,7 +68,7 @@ function YT_IKNOS_DA_RRH(inputfile,dataformat,timemultiple,depthmultiple,depth_z
 %     'ZocSurfWidth'  ,  'auto'    % see the Function for details
 %     'ZocDiveSurf'  ,  6     % 6 times depth resolution
 %
-% For input in yt_find_bottom
+% For input in find_bottom
 %
 %       Default to find bottom time is a slope method. If you want to change
 %       this and have a fixed percentage of maximum depth to calculate bottom
@@ -125,6 +125,10 @@ function YT_IKNOS_DA_RRH(inputfile,dataformat,timemultiple,depthmultiple,depth_z
 %                   account for newer hardware - most files can be
 %                   processed as a single piece rather than cut into
 %                   chunks. Version changed to 2.2/1.1
+%       December 2022 (Arina Favilla): changed yt_resolution() to either 
+%                                      yt_resolution_DepthRes() or
+%                                      yt_resolution_SamplingRate(), 
+%                                      added zoc'd profile to _zoc.fig 
 
 version='2.2/1.1';
 ProcessTime=clock;
@@ -295,7 +299,7 @@ ParamLineBot='';
 for i=1:2:size(varargin,2)-1
     if  isstr(varargin{i}) & varargin{i}(1:3)=='Zoc'
             ZocString=[ZocString,',''',varargin{i},''''];
-            if max(size(varargin{i+1}))==1 % this is because one Zoc input can be a vector of 2 values (see yt_zoc)
+            if max(size(varargin{i+1}))==1 % this is because one Zoc input can be a vector of 2 values (see zoc)
             ZocString=[ZocString,',',num2str(varargin{i+1})];
             ParamLineZoc=strvcat(ParamLineZoc,['%   ', varargin{i} , ' = ' num2str(varargin{i+1}) ]); 
             else
@@ -359,9 +363,9 @@ end
 n_lines=length(timecol);
 
     if sec_exist==1
-        sampling_interval=yt_resolution(timecol);
+        sampling_interval=yt_resolution_SamplingRate(timecol);
     else
-        sampling_interval=yt_resolution(timecol).*60;
+        sampling_interval=yt_resolution_SamplingRate(timecol).*60;
     end
     
     if sampling_interval==0
@@ -450,7 +454,7 @@ if size(headerline,1)==1  %% this means: file processed in one chunk.
     block_number=[];
 i=1;
 
-[fig1,fig2,yr,intervaldepth,intervaltime]=yt_import_and_analyse(yr,N(i,1),headerline(i,1),cut,block_number,overlap,inputfile,...
+[fig1,fig2,yr,intervaldepth,intervaltime,ParamLineZoc]=yt_import_and_analyse(yr,N(i,1),headerline(i,1),cut,block_number,overlap,inputfile,...
     finaloutputstatfile,finaloutputrawfile,variables,variables2,format,timemultiple,depthmultiple,depth_zone,wantfile,str3,str4,...
     ZocString,BotString,NightDayLightCutoff,ThermoclineGradient,dataformat,ParamLineBot,ParamLineZoc,version,ProcessTime); %       N(i,1),headerline(i,1),cut,block_number,chunk_idx,inputfile,outputstatfile,outputrawfile,variables,variables2,format,timemultiple,depthmultiple,method_bt,depth_zone,wantfile,str3,str4
 
@@ -525,7 +529,7 @@ else  %%% This is if the file is processed in several chunks
         else
         block_number=999999;
         end
-    [fig1,fig2,yr,intervaldepth,intervaltime]=yt_import_and_analyse(yr,N(i,1),headerline(i,1),cut,block_number,overlap,inputfile,...
+    [fig1,fig2,yr,intervaldepth,intervaltime,ParamLineZoc]=yt_import_and_analyse(yr,N(i,1),headerline(i,1),cut,block_number,overlap,inputfile,...
         outputstatfile,outputrawfile,variables,variables2,format,timemultiple,depthmultiple,depth_zone,wantfile,str3,str4,...
         ZocString,BotString,NightDayLightCutoff,ThermoclineGradient,dataformat,ParamLineBot,ParamLineZoc,version,ProcessTime); %       N(i,1),headerline(i,1),cut,block_number,chunk_idx,inputfile,outputstatfile,outputrawfile,variables,variables2,format,timemultiple,depthmultiple,method_bt,depth_zone,wantfile,str3,str4
     end
@@ -630,7 +634,7 @@ end
 % function IKNOS_DA(inputfile,variables2,format,timemultiple,depthmultiple,method_bt,depth_zone,wantfile)
 
 %% CORE FUNCTION OF PROGRAM
-function [fig1,fig2,yr,intervaldepth,intervaltime]=yt_import_and_analyse(yr,a,b,cut,block_number,overlap,inputfile,...
+function [fig1,fig2,yr,intervaldepth,intervaltime,ParamLineZoc]=yt_import_and_analyse(yr,a,b,cut,block_number,overlap,inputfile,...
     outputstatfile,outputrawfile,variables,variables2,format,timemultiple,depthmultiple,depth_zone,wantfile,str3,str4,...
     ZocString,BotString,NightDayLightCutoff,ThermoclineGradient,dataformat,ParamLineBot,ParamLineZoc,version,ProcessTime) 
 
@@ -851,7 +855,7 @@ clear xa xb xc xd xe xf xg xh xi xj variables2
     end
 
 %% IKNOS_DA: depth and time resolution
-    intervaldepth=yt_resolution(matrix2(:,coldepth));
+    intervaldepth=resolution_DepthRes(matrix2(:,coldepth));
  if intervaldepth<=0.01
         matrix2(:,coldepth)=yt_round2nearest(matrix2(:,coldepth),0.01);
         intervaldepth=0.01;
@@ -873,7 +877,7 @@ clear xa xb xc xd xe xf xg xh xi xj variables2
  end
 
     disp(['Interval depth == ',num2str(intervaldepth)]);
-    intervaltime=yt_resolution(round(matrix2(:,coltime).*86400));
+    intervaltime=resolution_SamplingRate(round(matrix2(:,coltime).*86400));
 
 % %% A little memory management
 %     cwd = pwd;
@@ -882,8 +886,8 @@ clear xa xb xc xd xe xf xg xh xi xj variables2
 %     cd(cwd)
 
 %% IKNOS_DA: correct depth values
-% disp(['[depth2,correction]=yt_zoc(matrix2(:,coltime),matrix2(:,coldepth)',ZocString,');']); %can be used to debug
-eval([ '[depth2,correction]=yt_zoc(matrix2(:,coltime),matrix2(:,coldepth)',ZocString,');']);
+% disp(['[depth2,correction]=zoc(matrix2(:,coltime),matrix2(:,coldepth)',ZocString,');']); %can be used to debug
+eval([ '[depth2,correction]=zoc(matrix2(:,coltime),matrix2(:,coldepth)',ZocString,');']);
 
 % %% IKNOS_DA: Plot to check the zero offset correction
     fig1=figure(1);
@@ -892,6 +896,7 @@ eval([ '[depth2,correction]=yt_zoc(matrix2(:,coltime),matrix2(:,coldepth)',ZocSt
     hold on;
     plot(matrix2(:,coltime),-correction','-r'); %zocvalue
     hold on , datetick('x',1) , grid on 
+    plot(matrix2(:,coltime),-depth2,'g'); % added by Arina
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%    THE "CREATE RAW DATA FILE" SECTION-----------------------------------
@@ -1033,7 +1038,7 @@ end
     clear var_mat1 var_mat3 string2  inc header zocvalue format2 bigcell
 
 % IKNOS_DA: find diving data and reduce matrix accordingly
-    [want,newdepth,dt]=yt_find_dive(matrix2(:,coltime),timemultiple,depth2,depthmultiple);
+    [want,newdepth,dt]=find_dive(matrix2(:,coltime),timemultiple,depth2,depthmultiple);
     if ~isempty(dt)
     matrix2(:,coldepth)=newdepth(:,1);
     id1=dt(:,2)-dt(:,1)+1;
@@ -1077,8 +1082,8 @@ end
     dt=dt(find(chkvector),:);
     
 % IKNOS_DA: find start and end indexes of bottom phases (bt, 2 columns)
-% disp(['bt=yt_find_bottom(matrix',BotString,');']); %use to debug
-   eval(['bt=yt_find_bottom(matrix',BotString,');']);
+% disp(['bt=find_bottom(matrix',BotString,');']); %use to debug
+   eval(['bt=find_bottom(matrix',BotString,');']);
    
  
    
@@ -1324,7 +1329,7 @@ param=strvcat('%[FILE/FORMAT]',...
              ['%   Input Data Format = ', dataformat],...
               '%[ZERO OFFSET CORRECTION]');
 if isempty(ZocString)
-param=strvcat(param,'%   Zoc Parameters = All Default Values');
+param=strvcat(param,ParamLineZoc);
 else
 param=strvcat(param,ParamLineZoc);
 end
