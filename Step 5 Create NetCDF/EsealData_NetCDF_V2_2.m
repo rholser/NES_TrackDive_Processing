@@ -22,7 +22,7 @@
 
 clear
 load('MetaData.mat');
-load('All_FileNames.mat');
+load('All_Filenames.mat');
 
 filename='2014001_12933_tdr_raw.csv';
 data=readtable(filename);
