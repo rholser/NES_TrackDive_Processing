@@ -3,33 +3,35 @@
 %
 %Created by: Rachel Holser (rholser@ucsc.edu), rewritten from P.Robinson's 2009 script. 
 %Last updated: 22-Oct-2022
-
+%
 %Function to prepare csv file, fix errors, and run dive analysis on TDR
 %data.
-
+%
 %Truncates data to startstop for non-Little Leonardo data
-
+%
 %Requires IKNOS toolbox
 %Requires functions: iknos_da
 %                    DA_data_compiler_RRH
 %                    yt_findclosest_RRH
-
+%                    resolution_DepthRes
+%
 %Version 4.2: incorportates new SMRU tdr_clean files and uses datetime
 %rather than datenum wherever possible
 %
-% Update: 10-Dec-2022
-% Add datetime conversions for different instrument types
-%          5-Dec-2022 - modified by Arina Favilla to (1) update zoc approach to account for large zero offset 
-%                       and (2) fix Kami timestamp:
-%                           added elseif statements to Step 1
-%                           added line to Step 3.1
-%                           added Step 3.3
-%                           added code to Kami if statement in Step 4
-%                           modified Step 8 to round DepthRes
-%                           added Step 8.1
-%                           edited Step 9
+% Update Log: 
+% 05-Dec-2022 - modified by Arina Favilla to (1) update zoc approach to account for large zero offset 
+%               and (2) fix Kami timestamp:
+%               added elseif statements to Step 1
+%               added line to Step 3.1
+%               added Step 3.3
+%               added code to Kami if statement in Step 4
+%               modified Step 8 to round DepthRes
+%               added Step 8.1
+%               edited Step 9
+% 10-Dec-2022 - Add datetime conversions for different instrument types
+% 17-Dec-2022 - Changed depth res method to use resolution_DepthRes
 
-function output=change_format_DA2_RRH_TV4_2(filename,Start,End,TOPPID)
+function change_format_DA2_RRH_TV4_2(filename,Start,End,TOPPID)
     %Step 1: load csv of TDR data
         data=readtable(filename,'HeaderLines',0,'ReadVariableNames',true);
 
@@ -90,8 +92,8 @@ function output=change_format_DA2_RRH_TV4_2(filename,Start,End,TOPPID)
             data.Time=datetime(data.Time,'InputFormat','HH:mm:ss dd-MMM-yyyy');
         end
     elseif size(strfind(filename,'Kami'),1)>0
-        [y m d]=ymd(data.Date);
-        [H M S]=hms(data.Time);
+        [y,m,d]=ymd(data.Date);
+        [H,M,S]=hms(data.Time);
         data.Time=datetime(y,m,d,H,M,S);
         data=removevars(data,'Date');
         clear y m d H M S
@@ -246,7 +248,8 @@ function output=change_format_DA2_RRH_TV4_2(filename,Start,End,TOPPID)
     
     %Step 4: truncate record to start and end time for TDRs that are not
         %from Stroke accelerometers
-        % for Kami TDRs: apply offset, truncate record, and apply 
+        
+        % Step 4.1 for Kami TDRs: apply offset, truncate record, and apply 
         % compression factor 
         if size(strfind(filename,'Kami'),1)>0
             if isduration(offset)
@@ -286,8 +289,10 @@ function output=change_format_DA2_RRH_TV4_2(filename,Start,End,TOPPID)
                         =datevec(data.Time);
                 end
             end
-
+        %Step 4.2 for Stroke TDRs: do nothing
         elseif size(strfind(filename,'Stroke'),1)>0
+
+        %Step 4.3 for other TDRs: truncate record to start and end
         else
             [~,ind1]=min(abs(data.Time-Start));
             [~,ind2]=min(abs(data.Time-End));
@@ -305,8 +310,6 @@ function output=change_format_DA2_RRH_TV4_2(filename,Start,End,TOPPID)
         OffTime_ind(:)=OffTime_ind(:)+1;
         data(OffTime_ind,:)=[];
     
-    %Find section of dive record that has repeated itself....
-
     %Step 7: generate variable string for iknos da and write to new .csv.
         if size(strfind(filename,'-out-Archive'),1)>0
             [data_DA,DAstring]=DA_data_compiler_RRH_TV4(data);
@@ -323,12 +326,7 @@ function output=change_format_DA2_RRH_TV4_2(filename,Start,End,TOPPID)
         end
 
     %Step 8: Depth resolution detection
-        DepthRes=unique(abs(diff(data.Depth)));
-        if DepthRes(1,1)>0
-            DepthRes=DepthRes(1,1);
-        else
-            DepthRes=DepthRes(2,1);
-        end
+        DepthRes=resolution_DepthRes(data.Depth);
         if rem(DepthRes,0.5)>0 % added by Arina to deal with Kami DepthRes as 1.2 m
             DepthRes=floor(DepthRes); 
         end
@@ -370,25 +368,25 @@ function output=change_format_DA2_RRH_TV4_2(filename,Start,End,TOPPID)
 %             'ZocWidthForMode',15,'ZocSurfWidth',10,'ZocDiveSurf',15,'ZocMinMax',[-10,2200]);
 %         end
 
-%Step 10: Plot and save QC figs
-rawzocdatafile=dir([filename '_DAprep_full_iknos_raw_data.csv']);
-rawzocdata=readtable(rawzocdatafile.name,'HeaderLines',0,'ReadVariableNames',true);
-rawzocdata.Time=datetime(rawzocdata.time,'ConvertFrom','datenum');
-
-DiveStatfile=dir([filename '_DAprep_full_iknos_DiveStat.csv']); 
-DiveStat=readtable(DiveStat.name,'HeaderLines',0,'ReadVariableNames',true);
-DiveStat.Time=datetime(DiveStat.Year,DiveStat.Month,DiveStat.Day,DiveStat.Hour,DiveStat.Min,DiveStat.Sec);
-
-figure(1);
-plot(rawzocdata.Time,rawzocdata.depth);
-hold on; set(gca,'YDir','reverse');
-plot(rawzocdata.Time,rawzocdata.CorrectedDepth,'b');
-scatter(DiveStat.Time,zeros(size(DiveStat,1),1),[],'go');
-scatter(DiveStat.Time+seconds(DiveStat.Dduration),zeros(size(DiveStat,1),1),[],'ro');
-text(DiveStat.Time,DiveStat.Maxdepth,num2str(DiveStat.DiveNumber),'Color','b');
-legend({'raw','zoc','Start dive','End dive'});
-title(['Raw vs ZOC: ' num2str(MetaDataAll.TOPPID(row))]);
-savefig([num2str(MetaDataAll.TOPPID(row)) '_Raw_ZOC.fig']); 
-close; 
+    %Step 10: Plot and save QC figs
+    rawzocdatafile=dir([filename '_DAprep_full_iknos_raw_data.csv']);
+    rawzocdata=readtable(rawzocdatafile.name,'HeaderLines',0,'ReadVariableNames',true);
+    rawzocdata.Time=datetime(rawzocdata.time,'ConvertFrom','datenum');
+    
+    DiveStatfile=dir([filename '_DAprep_full_iknos_DiveStat.csv']);
+    DiveStat=readtable(DiveStatfile.name,'HeaderLines',0,'ReadVariableNames',true);
+    DiveStat.Time=datetime(DiveStat.Year,DiveStat.Month,DiveStat.Day,DiveStat.Hour,DiveStat.Min,DiveStat.Sec);
+    
+    figure(1);
+    plot(rawzocdata.Time,rawzocdata.depth);
+    hold on; set(gca,'YDir','reverse');
+    plot(rawzocdata.Time,rawzocdata.CorrectedDepth,'b');
+    scatter(DiveStat.Time,zeros(size(DiveStat,1),1),[],'go');
+    scatter(DiveStat.Time+seconds(DiveStat.Dduration),zeros(size(DiveStat,1),1),[],'ro');
+    text(DiveStat.Time,DiveStat.Maxdepth,num2str(DiveStat.DiveNumber),'Color','b');
+    legend({'raw','zoc','Start dive','End dive'});
+    title(['Raw vs ZOC: ' num2str(MetaDataAll.TOPPID(row))]);
+    savefig([num2str(MetaDataAll.TOPPID(row)) '_Raw_ZOC.fig']);
+    close;
 
 end
