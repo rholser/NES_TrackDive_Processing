@@ -41,12 +41,15 @@ function [depth2,correction,ParamLineZoc]=zoc(time,depth,varargin)
 % Created sometime in 2003 or 2004, by Yann Tremblay (The IKNOS toolbox).
 % need: yt_resolution yt_setones
 %
-% VERSION: 1.0
+% VERSION: 2.0
 %
-%  Modified 9 December 2022 (Arina Favilla): changed yt_resolution() to
-%                                            either resolution_DepthRes() or resolution_SamplingRate(),
-%                                            added ParamLineZoc to output
-%  Renamed 16 December 2022 (Arina Favilla): renamed from yt_zoc to zoc 
+%  Modified 09-Dec-2022 (Arina Favilla): changed yt_resolution() to
+%                                        either resolution_DepthRes() or resolution_SamplingRate(),
+%                                        added ParamLineZoc to output
+%  Renamed 16-Dec-2022 (Arina Favilla): renamed from yt_zoc to zoc 
+%  Modified 17-Dec-2022 (R. Holser): replaced strvcat with char
+%                                    added documentation of varargin inputs
+%                                    removed some code that was commented out
 
 
 ZocMinMax=[-10 2500];
@@ -61,9 +64,10 @@ ParamLineZoc='';
 if nargin>2
     try
         for i=1:2:size(varargin,2)-1
-            if  ismember(varargin{i},strvcat('ZocMinMax','ZocWindow','ZocSpeedFilter','ZocWidthForMode','ZocModeMax','ZocSurfWidth','ZocDiveSurf'),'rows')
-             eval([varargin{i},'=[',num2str(varargin{i+1}),'];']);
-            else   error('  ')
+            if  ismember(varargin{i},char('ZocMinMax','ZocWindow','ZocSpeedFilter','ZocWidthForMode','ZocModeMax','ZocSurfWidth','ZocDiveSurf'),'rows')
+                eval([varargin{i},'=[',num2str(varargin{i+1}),'];']);
+            else   
+                error('  ')
             end
         end
     catch
@@ -71,7 +75,7 @@ if nargin>2
     end
 end
 
-ParamLineZoc=strvcat(ParamLineZoc,['%   ', 'ZocMinMax' , ' = [' num2str(ZocMinMax) ,']' ]); % added by Arina
+ParamLineZoc=char(ParamLineZoc,['%   ', 'ZocMinMax' , ' = [' num2str(ZocMinMax) ,']' ]); % added by Arina
 
 % dept=find(depth>ZocMinMax(1,1) & depth<ZocMinMax(1,2));
 % maxd=max(depth(find(depth>ZocMinMax(1,1) & depth<ZocMinMax(1,2)),1));
@@ -80,7 +84,7 @@ if strcmpi(ZocWindow,'auto')
     if ZocWindow<(1/12) %% that is 5 minutes
         ZocWindow=1/12;
     end
-    ParamLineZoc=strvcat(ParamLineZoc,['%   ', 'ZocWindow' , ' = ' num2str(ZocWindow) ]); % added by Arina
+    ParamLineZoc=char(ParamLineZoc,['%   ', 'ZocWindow' , ' = ' num2str(ZocWindow) ]); % added by Arina
 end
 disp(['ZOC_window=',num2str(ZocWindow*60),' minutes.']);
 
@@ -94,7 +98,8 @@ s=size(time,1);
 % Does sampling is continuous (1) or not (0) ??
 if sum(diff(time))/intervaltime==s-1
     continuous=1;
-else continuous=0;
+else 
+    continuous=0;
 end
 
 %%---Get minimum interval depth (i.e. Depth resolution)
@@ -165,7 +170,8 @@ if continuous==1
        if grid(size(grid,1),1)<(time(s,1)/intervaltime)+1
            grid=[grid ; s];
        end
-    else grid=[1 ; s];
+    else 
+        grid=[1 ; s];
     end
 else
     if s>(ZocWindow*3600)/intervaltime
@@ -173,7 +179,8 @@ else
        if grid(size(grid,1),1)<s
            grid=[grid ; s];
        end
-    else grid=[1 ; s];
+    else 
+        grid=[1 ; s];
     end
 end
 fin=size(grid,1);   
@@ -187,8 +194,8 @@ for i=1:fin-1
     minimum=min(depthmat);
     maxd=max(depthmat);
 
+    %Automated ZocWidthForMode calculation
     if strcmpi(ZocWidthForMode,'auto')
-
         if maxd<=15
             if intervaldepth<1
                 ZocWidthForMode=3*intervaldepth;
