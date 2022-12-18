@@ -340,43 +340,46 @@ function change_format_DA2_RRH_TV4_2(filename,Start,End,TOPPID)
     if minsurface<-10
         if size(strfind(filename,'-out-Archive'),1)>0
             iknos_da([strtok(filename,'-') '_DAprep_full.csv'],DAstring,...
-                32/SamplingRate,15/DepthRes,20,'wantfile_yes',...
-                'ZocMinMax',[minsurface-10,2500]);
+                32/SamplingRate,15/DepthRes,20,'wantfile_yes','ZocWindow',2,...
+                'ZocWidthForMode',15,'ZocSurfWidth',10,'ZocDiveSurf',15,...
+                'ZocMinMax',[minsurface-10,2200]);
         else
             iknos_da([strtok(filename,'.') '_DAprep_full.csv'],DAstring,...
-                32/SamplingRate,15/DepthRes,20,'wantfile_yes',...
+                32/SamplingRate,15/DepthRes,20,'wantfile_yes','ZocWindow',2,...
+                'ZocWidthForMode',15,'ZocSurfWidth',10,'ZocDiveSurf',15,...
                 'ZocMinMax',[minsurface-10,2500]);
         end
     else
         if size(strfind(filename,'-out-Archive'),1)>0
             iknos_da([strtok(filename,'-') '_DAprep_full.csv'],DAstring,...
-                32/SamplingRate,15/DepthRes,20,'wantfile_yes');
+                32/SamplingRate,15/DepthRes,20,'wantfile_yes','ZocWindow',2,...
+                'ZocWidthForMode',15,'ZocSurfWidth',10,'ZocDiveSurf',15,'ZocMinMax',[-10,2200]);
         else
             iknos_da([strtok(filename,'.') '_DAprep_full.csv'],DAstring,...
-                32/SamplingRate,15/DepthRes,20,'wantfile_yes');
+                32/SamplingRate,15/DepthRes,20,'wantfile_yes','ZocWindow',2,...
+                'ZocWidthForMode',15,'ZocSurfWidth',10,'ZocDiveSurf',15,'ZocMinMax',[-10,2200]);
         end
     end
 
-%     %Step 9: Run IKNOS DA    
-%         if size(strfind(filename,'-out-Archive'),1)>0
-%             iknos_da([strtok(filename,'-') '_DAprep_full.csv'],DAstring,...
-%             32/SamplingRate,15/DepthRes,20,'wantfile_yes','ZocWindow',2,...
-%             'ZocWidthForMode',15/DepthRes,'ZocSurfWidth',10,'ZocDiveSurf',15,'ZocMinMax',[-10,2200]);
-%         else
-%             iknos_da([strtok(filename,'.') '_DAprep_full.csv'],DAstring,...
-%             32/SamplingRate,15/DepthRes,20,'wantfile_yes','ZocWindow',2,...
-%             'ZocWidthForMode',15,'ZocSurfWidth',10,'ZocDiveSurf',15,'ZocMinMax',[-10,2200]);
-%         end
-
     %Step 10: Plot and save QC figs
-    rawzocdatafile=dir([filename '_DAprep_full_iknos_raw_data.csv']);
-    rawzocdata=readtable(rawzocdatafile.name,'HeaderLines',0,'ReadVariableNames',true);
-    rawzocdata.Time=datetime(rawzocdata.time,'ConvertFrom','datenum');
-    
-    DiveStatfile=dir([filename '_DAprep_full_iknos_DiveStat.csv']);
-    DiveStat=readtable(DiveStatfile.name,'HeaderLines',0,'ReadVariableNames',true);
-    DiveStat.Time=datetime(DiveStat.Year,DiveStat.Month,DiveStat.Day,DiveStat.Hour,DiveStat.Min,DiveStat.Sec);
-    
+    if size(strfind(filename,'-out-Archive'),1)>0
+        rawzocdatafile=dir([strtok(filename,'-') '_DAprep_full_iknos_raw_data.csv']);
+        rawzocdata=readtable(rawzocdatafile.name,'HeaderLines',25,'ReadVariableNames',true);
+        rawzocdata.Time=datetime(rawzocdata.time,'ConvertFrom','datenum');
+
+        DiveStatfile=dir([strtok(filename,'-') '_DAprep_full_iknos_DiveStat.csv']);
+        DiveStat=readtable(DiveStatfile.name,'HeaderLines',25,'ReadVariableNames',true);
+        DiveStat.Time=datetime(DiveStat.Year,DiveStat.Month,DiveStat.Day,DiveStat.Hour,DiveStat.Min,DiveStat.Sec);
+    else
+        rawzocdatafile=dir([strtok(filename,'.') '_DAprep_full_iknos_raw_data.csv']);
+        rawzocdata=readtable(rawzocdatafile.name,'HeaderLines',25,'ReadVariableNames',true);
+        rawzocdata.Time=datetime(rawzocdata.time,'ConvertFrom','datenum');
+
+        DiveStatfile=dir([strtok(filename,'.') '_DAprep_full_iknos_DiveStat.csv']);
+        DiveStat=readtable(DiveStatfile.name,'HeaderLines',25,'ReadVariableNames',true);
+        DiveStat.Time=datetime(DiveStat.Year,DiveStat.Month,DiveStat.Day,DiveStat.Hour,DiveStat.Min,DiveStat.Sec);
+    end
+
     figure(1);
     plot(rawzocdata.Time,rawzocdata.depth);
     hold on; set(gca,'YDir','reverse');

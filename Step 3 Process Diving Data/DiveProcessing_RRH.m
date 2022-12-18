@@ -43,7 +43,7 @@ file1=dir('*tdr_clean.csv'); %SMRU tag files should end in "tdr_clean.csv"
 file2=dir('*Archive.csv'); %WC files should end in "Archive.csv"
 file3=dir('*tdr.csv'); %kami tag files should end in "tdr.csv"
 file=[file1; file2;file3];
-clear file1 file2
+clear file1 file2 file3
 load('MetaData.mat');
 
 for k=1:length(file)
