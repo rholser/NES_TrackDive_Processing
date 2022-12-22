@@ -30,6 +30,8 @@
 %               edited Step 9
 % 10-Dec-2022 - Add datetime conversions for different instrument types
 % 17-Dec-2022 - Changed depth res method to use resolution_DepthRes
+% 21-Dec-2022 - Modified minsurface in Step 8.1 to account for instances where WC tag
+% records -80m during surface interval when dry
 
 function change_format_DA2_RRH_TV4_2(filename,Start,End,TOPPID)
     %Step 1: load csv of TDR data
@@ -257,7 +259,6 @@ function change_format_DA2_RRH_TV4_2(filename,Start,End,TOPPID)
                 [data.Year, data.Month, data.Day, data.Hour, data.Min, data.Sec]...
                     =datevec(data.Time);
                 data.Sec=round(data.Sec); % some seconds > 59 so next lines fix the issue
-                % nextmin=find(data.Sec>59); 
                 if sum(data.Sec>59)>0
                     data.Time=datetime(data.Year, data.Month, data.Day, data.Hour, data.Min, data.Sec);
                     [data.Year, data.Month, data.Day, data.Hour, data.Min, data.Sec]...
@@ -327,14 +328,15 @@ function change_format_DA2_RRH_TV4_2(filename,Start,End,TOPPID)
 
     %Step 8: Depth resolution detection
         DepthRes=resolution_DepthRes(data.Depth);
-        if rem(DepthRes,0.5)>0 % added by Arina to deal with Kami DepthRes as 1.2 m
-            DepthRes=floor(DepthRes); 
-        end
 
         %Step 8.1: detect if dive surface intervals have offset >10m
         running_surface = movmin(data.Depth,hours(24*2),'SamplePoints',data.Time);
         [f,xi]=ecdf(running_surface); %figure; ecdf(running_surface,'Bounds','on');
-        minsurface=interp1(f,xi,0.05);
+        if abs(xi(3)-xi(2))<10 % if there's a large jump, might be due to surface spikes
+            minsurface=xi(3); 
+        else
+            minsurface=interp1(f,xi,0.05);
+        end
 
     %Step 9: Run IKNOS DA - new ZocMinMax with DEFAULT ZOC params
     if minsurface<-10
@@ -347,7 +349,7 @@ function change_format_DA2_RRH_TV4_2(filename,Start,End,TOPPID)
             iknos_da([strtok(filename,'.') '_DAprep_full.csv'],DAstring,...
                 32/SamplingRate,15/DepthRes,20,'wantfile_yes','ZocWindow',2,...
                 'ZocWidthForMode',15,'ZocSurfWidth',10,'ZocDiveSurf',15,...
-                'ZocMinMax',[minsurface-10,2500]);
+                'ZocMinMax',[minsurface-10,2200]);
         end
     else
         if size(strfind(filename,'-out-Archive'),1)>0

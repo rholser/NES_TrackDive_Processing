@@ -18,7 +18,7 @@ function [depth2,correction,ParamLineZoc]=zoc(time,depth,varargin)
 %
 %     'ZocWidthForMode'  ,  'auto'   % the search for an approximate surface 
 %       is restricted to between the minimum (shallowest) value defined in 
-%       'ZonMinMax' and 'ZocWidthCorMode'. This excludes the bottom of
+%       'ZocMinMax' and 'ZocWidthForMode'. This excludes the bottom of
 %       dives, where repeated similar depths could appear as a "surface".
 %       This value has the unit "number of times depth resolution." 
 %
