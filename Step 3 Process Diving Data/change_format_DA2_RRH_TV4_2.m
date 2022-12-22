@@ -46,6 +46,14 @@ function change_format_DA2_RRH_TV4_2(filename,Start,End,TOPPID)
             data.Properties.VariableNames(2)={'Depth'};
             data(1,:)=[]; %remove top row - often has faulty time format when no headers
         end
+        % Combine date and time columns for Kami tag 
+        if size(strfind(filename,'Kami'),1)>0
+            [y,m,d]=ymd(data.Date);
+            [H,M,S]=hms(data.Time);
+            data.Time=datetime(y,m,d,H,M,S);
+            data=removevars(data,'Date');
+            clear y m d H M S
+        end
 
     %Step 2: remove rows with depth issues
         %Step 2.1: remove rows with NaNs (often present in row with
@@ -93,12 +101,6 @@ function change_format_DA2_RRH_TV4_2(filename,Start,End,TOPPID)
         try
             data.Time=datetime(data.Time,'InputFormat','HH:mm:ss dd-MMM-yyyy');
         end
-    elseif size(strfind(filename,'Kami'),1)>0
-        [y,m,d]=ymd(data.Date);
-        [H,M,S]=hms(data.Time);
-        data.Time=datetime(y,m,d,H,M,S);
-        data=removevars(data,'Date');
-        clear y m d H M S
     end
     %try
     %    data.Time=data.Date+data.Time;
