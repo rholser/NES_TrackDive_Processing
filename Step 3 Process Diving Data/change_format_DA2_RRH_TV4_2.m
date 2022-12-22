@@ -383,15 +383,21 @@ function change_format_DA2_RRH_TV4_2(filename,Start,End,TOPPID)
     end
 
     figure(1);
-    plot(rawzocdata.Time,rawzocdata.depth);
+    plot(rawzocdata.Time,rawzocdata.depth,'k');
     hold on; set(gca,'YDir','reverse');
     plot(rawzocdata.Time,rawzocdata.CorrectedDepth,'b');
     scatter(DiveStat.Time,zeros(size(DiveStat,1),1),[],'go');
     scatter(DiveStat.Time+seconds(DiveStat.Dduration),zeros(size(DiveStat,1),1),[],'ro');
     text(DiveStat.Time,DiveStat.Maxdepth,num2str(DiveStat.DiveNumber),'Color','b');
     legend({'raw','zoc','Start dive','End dive'});
-    title(['Raw vs ZOC: ' num2str(MetaDataAll.TOPPID(row))]);
-    savefig([num2str(MetaDataAll.TOPPID(row)) '_Raw_ZOC.fig']);
+    title(['Raw vs ZOC: ' num2str(TOPPID)]);
+    if size(strfind(filename,'-out-Archive'),1)>0
+        savefig([strtok(filename,'-') '_Raw_ZOC.fig']);
+    elseif size(strfind(filename,'Kami'),1)>0
+        savefig([strtok(filename,'.') '_Kami_Raw_ZOC.fig']);
+    else
+        savefig([strtok(filename,'.') '_Raw_ZOC.fig']);
+    end
     close;
 
 end
