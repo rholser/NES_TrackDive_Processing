@@ -30,6 +30,8 @@
 %               edited Step 9
 % 10-Dec-2022 - Add datetime conversions for different instrument types
 % 17-Dec-2022 - Changed depth res method to use resolution_DepthRes
+% 21-Dec-2022 - Modified minsurface in Step 8.1 to account for instances where WC tag
+% records -80m during surface interval when dry
 % 22-Dec-2022 - Minor changes to final figure
 
 function change_format_DA2_RRH_TV4_2(filename,Start,End,TOPPID)
@@ -45,6 +47,15 @@ function change_format_DA2_RRH_TV4_2(filename,Start,End,TOPPID)
             data.Properties.VariableNames(2)={'Depth'};
             data(1,:)=[]; %remove top row - often has faulty time format when no headers
         end
+        % Combine date and time columns for Kami tag 
+        if size(strfind(filename,'Kami'),1)>0
+            [y,m,d]=ymd(data.Date);
+            [H,M,S]=hms(data.Time);
+            data.Time=datetime(y,m,d,H,M,S);
+            data=removevars(data,'Date');
+            clear y m d H M S
+        end
+
 
     %Step 2: remove rows with depth issues
         %Step 2.1: remove rows with NaNs (often present in row with
@@ -92,12 +103,6 @@ function change_format_DA2_RRH_TV4_2(filename,Start,End,TOPPID)
         try
             data.Time=datetime(data.Time,'InputFormat','HH:mm:ss dd-MMM-yyyy');
         end
-    elseif size(strfind(filename,'Kami'),1)>0
-        [y,m,d]=ymd(data.Date);
-        [H,M,S]=hms(data.Time);
-        data.Time=datetime(y,m,d,H,M,S);
-        data=removevars(data,'Date');
-        clear y m d H M S
     end
     %try
     %    data.Time=data.Date+data.Time;
@@ -156,6 +161,10 @@ function change_format_DA2_RRH_TV4_2(filename,Start,End,TOPPID)
                 offset = hours(7)+minutes(58)+seconds(57);
                 compress = minutes(2)+seconds(10); 
                 Cut=datetime(2011,4,7,4,25,55)+offset;
+            elseif TOPPID==2011018
+                offset = hours(7)+minutes(59)+seconds(2); 
+                compress = minutes(2)+seconds(27); 
+                Cut=0;
             elseif TOPPID==2011019
                 offset = hours(7)+minutes(59)+seconds(54);
                 compress = minutes(3)+seconds(6);
@@ -172,6 +181,14 @@ function change_format_DA2_RRH_TV4_2(filename,Start,End,TOPPID)
                 offset = hours(7)+minutes(50)+seconds(22);
                 compress = minutes(1)+seconds(45);
                 Cut=datetime(2012,3,8,23,5,35)+offset;
+            elseif TOPPID==2012014
+                offset = hours(8)+minutes(1)+seconds(55); 
+                compress = minutes(2)+seconds(28); 
+                Cut=0;
+            elseif TOPPID==2012037
+                offset = hours(5)+minutes(41)+seconds(32); 
+                compress = minutes(4)+seconds(2); 
+                Cut=datetime(2012,9,23,22,46,57);   
             elseif TOPPID==2012038
                 offset = hours(5)+minutes(41)+seconds(0);
                 compress = minutes(5)+seconds(57);
@@ -232,14 +249,46 @@ function change_format_DA2_RRH_TV4_2(filename,Start,End,TOPPID)
                 offset = hours(8)+minutes(0)+seconds(28);
                 compress = minutes(4)+seconds(46);
                 Cut=0; 
+            elseif TOPPID==2014015
+                offset = hours(8)+minutes(30)+seconds(35);
+                compress = minutes(2)+seconds(28);
+                Cut=0;
             elseif TOPPID==2014018
                 offset = hours(8)+minutes(0)+seconds(20);
                 compress = minutes(4)+seconds(15); 
                 Cut=0; 
+            elseif TOPPID==2015001
+                offset = hours(8)+minutes(0)+seconds(25); 
+                compress = seconds(22); 
+                Cut=0;
             elseif TOPPID==2015003
                 offset = hours(7)+minutes(45)+seconds(47);
                 compress = minutes(3)+seconds(29); 
                 Cut=0; 
+            elseif TOPPID==2015009
+                offset = hours(8)+minutes(0)+seconds(31);
+                compress = minutes(4)+seconds(15); 
+                Cut=0; 
+            elseif TOPPID==2015010
+                offset = hours(8)+minutes(0)+seconds(28); 
+                compress = minutes(4)+seconds(1); 
+                Cut=0;
+            elseif TOPPID==2016004
+                offset = hours(8)+minutes(2)+seconds(10);
+                compress = minutes(2)+seconds(57); 
+                Cut=0;
+            elseif TOPPID==2016011
+                offset = hours(8)+minutes(0)+seconds(50); 
+                compress = minutes(2)+seconds(25); 
+                Cut=0;
+            elseif TOPPID==2017002
+                offset = hours(8)+minutes(0)+seconds(27); 
+                compress = minutes(3)+seconds(58); 
+                Cut=0; 
+            elseif TOPPID==2017004
+                offset = hours(8)+minutes(0)+seconds(23); 
+                compress = minutes(3)+seconds(24); 
+                Cut=0;
             else
                 offset=0; 
                 compress=0; 
@@ -328,14 +377,17 @@ function change_format_DA2_RRH_TV4_2(filename,Start,End,TOPPID)
 
     %Step 8: Depth resolution detection
         DepthRes=resolution_DepthRes(data.Depth);
-        if rem(DepthRes,0.5)>0 % added by Arina to deal with Kami DepthRes as 1.2 m
-            DepthRes=floor(DepthRes); 
-        end
 
         %Step 8.1: detect if dive surface intervals have offset >10m
-        running_surface = movmin(data.Depth,hours(24*2),'SamplePoints',data.Time);
+        running_surface = movmin(data.Depth,hours(2),'SamplePoints',data.Time);
         [f,xi]=ecdf(running_surface); %figure; ecdf(running_surface,'Bounds','on');
-        minsurface=interp1(f,xi,0.05);
+        if TOPPID==2013032 && size(strfind(filename,'-out-Archive'),1)>0 % has weird surface data 
+            minsurface=0; % set manually through visual inspection
+        elseif abs(xi(3)-xi(2))>10 % if there's a large jump, might be due to surface spikes
+            minsurface=xi(3); 
+        else
+            minsurface=interp1(f,xi,0.05);
+        end
 
     %Step 9: Run IKNOS DA - new ZocMinMax with DEFAULT ZOC params
     if minsurface<-10
@@ -348,7 +400,7 @@ function change_format_DA2_RRH_TV4_2(filename,Start,End,TOPPID)
             iknos_da([strtok(filename,'.') '_DAprep_full.csv'],DAstring,...
                 32/SamplingRate,15/DepthRes,20,'wantfile_yes','ZocWindow',2,...
                 'ZocWidthForMode',15,'ZocSurfWidth',10,'ZocDiveSurf',15,...
-                'ZocMinMax',[minsurface-10,2500]);
+                'ZocMinMax',[minsurface-10,2200]);
         end
     else
         if size(strfind(filename,'-out-Archive'),1)>0
@@ -390,7 +442,11 @@ function change_format_DA2_RRH_TV4_2(filename,Start,End,TOPPID)
     text(DiveStat.Time,DiveStat.Maxdepth,num2str(DiveStat.DiveNumber),'Color','b');
     legend({'raw','zoc','Start dive','End dive'});
     title(['Raw vs ZOC: ' num2str(TOPPID)]);
-    savefig([num2str(TOPPID),'_Raw_ZOC.fig']);
+    if size(strfind(filename,'-out-Archive'),1)>0
+        savefig([strtok(filename,'-') '_Raw_ZOC.fig']);
+    else
+        savefig([strtok(filename,'.') '_Raw_ZOC.fig']);
+    end
     close;
 
 end
