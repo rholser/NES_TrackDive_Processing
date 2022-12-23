@@ -42,7 +42,7 @@ for i=1:size(TagMetaDataAll,1)
     %Raw Data Group
     RawGrpID=netcdf.defGrp(ncid,'RAW_DATA');
     RawArgosGrpID=netcdf.defGrp(RawGrpID,'RAW_ARGOS');
-    RawGPRGrpID=netcdf.defGrp(RawGrpID,'RAW_GPS');
+    RawGPSGrpID=netcdf.defGrp(RawGrpID,'RAW_GPS');
     RawTDR1GrpID=netcdf.defGrp(RawGrpID,'RAW_TDR1');
     RawTDR2GrpID=netcdf.defGrp(RawGrpID,'RAW_TDR2');
     RawTDR3GrpID=netcdf.defGrp(RawGrpID,'RAW_TDR3');
@@ -228,7 +228,7 @@ for i=1:size(TagMetaDataAll,1)
     if ~isempty(data)
         %Set up different imports to account for different instrument types/formats
         %Wildlife Computers - may include light and temp
-        if contains(TDR1RawFiles.filename(TDR1RawFiles.TOPPID==TOPPID),'out-Archive')==1
+        if contains(TDRRawFiles.filename(TDRRawFiles.TOPPID==TOPPID),'out-Archive')==1
             netcdf.putVar(RawTDR1GrpID,RawTDR1Date,string(data.Time));
             netcdf.putVar(RawTDR1GrpID,RawTDR1Depth,data.Depth);
 
@@ -251,15 +251,15 @@ for i=1:size(TagMetaDataAll,1)
                 netcdf.putVar(RawTDR1GrpID,RawTDR1Light,data.Light);
             end
             %SMRU
-        elseif contains(TDR1RawFiles.filename(TDR1RawFiles.TOPPID==TOPPID),'tdr')==1
+        elseif contains(TDRRawFiles.filename(TDRRawFiles.TOPPID==TOPPID),'tdr')==1
             netcdf.putVar(RawTDR1GrpID,RawTDR1Date,data.Time);
             netcdf.putVar(RawTDR1GrpID,RawTDR1Depth,data.Depth);
             %Little Leonardo Kami
-        elseif contains(TDR1RawFiles.filename(TDR1RawFiles.TOPPID==TOPPID),'kami')==1
+        elseif contains(TDRRawFiles.filename(TDRRawFiles.TOPPID==TOPPID),'kami')==1
             netcdf.putVar(RawTDR1GrpID,RawTDR1Date,data.Time);
             netcdf.putVar(RawTDR1GrpID,RawTDR1Depth,data.Depth);
             %Little Leonardo Stroke
-        elseif contains(TDR1RawFiles.filename(TDR1RawFiles.TOPPID==TOPPID),'stroke')==1
+        elseif contains(TDRRawFiles.filename(TDRRawFiles.TOPPID==TOPPID),'stroke')==1
             netcdf.putVar(RawTDR1GrpID,RawTDR1Date,data.Time);
             netcdf.putVar(RawTDR1GrpID,RawTDR1Depth,data.Depth);
         end
@@ -1105,8 +1105,8 @@ netcdf.close(ncid);
     % TDR1 Subset DiveStat
     %load DiveStat file
     try
-        data=readtable(strcat(TDR1SubDiveStatFiles.folder(TDR1SubDiveStatFiles.TOPPID==TOPPID),'\',...
-            TDR1SubDiveStatFiles.filename(TDR1SubDiveStatFiles.TOPPID==TOPPID)),'NumHeaderLines',25);
+        data=readtable(strcat(TDRSubDiveStatFiles.folder(TDRSubDiveStatFiles.TOPPID==TOPPID),'\',...
+            TDRSubDiveStatFiles.filename(TDRSubDiveStatFiles.TOPPID==TOPPID)),'NumHeaderLines',25);
         data.DateTime=datetime(data.JulDate,"ConvertFrom","datenum");
     end
 
