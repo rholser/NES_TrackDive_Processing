@@ -128,8 +128,10 @@ function iknos_da(inputfile,dataformat,timemultiple,depthmultiple,depth_zone,wan
 %Also changed maxload to 1GB.
 %Update Log: 
 % 17-Dec-2022 - change name to iknos_da
+% 22-Dec-2022 - changed use of strvcat-->char, csvread-->readmatrix, isstr-->ischar,
+%               where appropriate
 
-version='2.2/1.2';
+version='2.3/1.2';
 ProcessTime=datetime("now");
 
 % %% A little memory management before to start
@@ -296,7 +298,8 @@ ThermoclineGradient=[];
 ParamLineZoc='';
 ParamLineBot='';
 for i=1:2:size(varargin,2)-1
-    if  isstr(varargin{i}) & varargin{i}(1:3)=='Zoc'
+    if ischar(varargin{i}) && strcmp(varargin{i}(1:3),'Zoc') %RRH add
+    %if  isstr(varargin{i}) & varargin{i}(1:3)=='Zoc'
             ZocString=[ZocString,',''',varargin{i},''''];
             if max(size(varargin{i+1}))==1 % this is because one Zoc input can be a vector of 2 values (see zoc)
             ZocString=[ZocString,',',num2str(varargin{i+1})];
@@ -305,14 +308,16 @@ for i=1:2:size(varargin,2)-1
             ZocString=[ZocString,',[',num2str(varargin{i+1}),']'];
             ParamLineZoc=strvcat(ParamLineZoc,['%   ', varargin{i} , ' = [' num2str(varargin{i+1}) ,']' ]); 
             end
-
-    elseif isstr(varargin{i}) & varargin{i}(1:3)=='Bot'
+    elseif ischar(varargin{i}) && strcmp(varargin{i}(1:3),'Bot')
+    %elseif isstr(varargin{i}) & varargin{i}(1:3)=='Bot'
              BotString=[BotString,',''',varargin{i},''''];
              BotString=[BotString,',',num2str(varargin{i+1})];
              ParamLineBot=strvcat(ParamLineBot,['%   ', varargin{i} , ' = ', num2str(varargin{i+1})]);
-    elseif isstr(varargin{i}) & strcmp(varargin{i},'NightCutOff')
+    elseif ischar(varargin{i}) && strcmp(varargin{i},'NightCutOff')  %RRH Add
+%    elseif isstr(varargin{i}) & strcmp(varargin{i},'NightCutOff')
         NightDayLightCutoff=num2str(varargin{i+1});
-    elseif isstr(varargin{i}) & strcmp(varargin{i},'ThermoclineGradient')
+    elseif ischar(varargin{i}) && strcmp(varargin{i},'ThermoclineGradient') %RRH Add
+%    elseif isstr(varargin{i}) & strcmp(varargin{i},'ThermoclineGradient')
         ThermoclineGradient=varargin{i+1};
     end
 end
@@ -338,25 +343,25 @@ command3_1=['[timecol]','=textread(''',inputfile,''',''',format1,''',',...
         '''delimiter''',',','''\t , ; / :''',',','''emptyvalue''',',','NaN,''','headerlines''',',','2);'];
     
 if exist(inputfile)==2
-try 
-    eval(command1_1);
-    headline=0;
-catch
     try
-    eval(command2_1);
-    headline=1;
+        eval(command1_1);
+        headline=0;
     catch
         try
-        eval(command3_1);
-        headline=2;
+            eval(command2_1);
+            headline=1;
         catch
-        error('Error importing the time column: check for 1) character strings in data field 2) number headerlines (max 2) 3) variable names in the good order 4) delimiter(s) must be: ''tab , ; / :'' (no space)')
+            try
+                eval(command3_1);
+                headline=2;
+            catch
+                error('Error importing the time column: check for 1) character strings in data field 2) number headerlines (max 2) 3) variable names in the good order 4) delimiter(s) must be: ''tab , ; / :'' (no space)')
+            end
         end
-    end   
-end
+    end
 
 else
-     error('File not found');
+    error('File not found');
 end
     
 n_lines=length(timecol);
@@ -407,10 +412,11 @@ end
 
 %% Final file names
     id=find(inputfile=='.');
-        if isempty(id)==0
+    if isempty(id)==0
         file=inputfile(1,1:id-1);
-        else file=inputfile ;
-        end
+    else
+        file=inputfile ;
+    end
     finaloutputstatfile=[file,'_','iknos_DiveStat.csv']; clear id;
     finaloutputrawfile=[file,'_','iknos_raw_data.csv']; 
     finaloutputfig1file=[file,'_','iknos_fig_zoc.fig'];
@@ -470,8 +476,12 @@ param=yt_getParameters(inputfile,dataformat,ZocString,ParamLineZoc,timemultiple,
     set(fig2,'visible','off');
     close all
 %% open stat file and add the dive number column
-    M=csvread(finaloutputstatfile,1,0);
-    [header]=textread(finaloutputstatfile,'%s',1,'delimiter','\n');
+    M=readmatrix(finaloutputstatfile,'Range',[1,0]); %RRH Add
+    %M=csvread(finaloutputstatfile,1,0);
+    fileID=fopen(finaloutputstatfile); %RRH Add
+    header=textscan(fileID,'%s',1,'delimiter','\n'); %RRH Add
+    fclose(fileID); %RRH Add
+    %[header]=textread(finaloutputstatfile,'%s',1,'delimiter','\n');
     M=[(1:size(M,1))',M];
 %% add dive numbers on the figure with analyzed dives
     fig2=open(finaloutputfig2file);
@@ -546,10 +556,14 @@ else  %%% This is if the file is processed in several chunks
     M=[];
     for i=1:size(headerline,1)
         fil=deblank(statfilelist(i,:));
-        N=csvread(fil,1,0);
+        N=readmatrix(fil,'Range',[1,0]); %RRH Add
+        %N=csvread(fil,1,0);
         M=[M;N]; clear N
         if i==1 % not necessary to do this each time.
-           [header]=textread(fil,'%s',1,'delimiter','\n');
+            fileID=fopen(fil); %RRH Add
+            header=textscan(fileID,'%s',1,'delimiter','\n'); %RRH add
+            fclose(fileID); %RRH add
+           %[header]=textread(fil,'%s',1,'delimiter','\n');
         end    
     end
     M=[(1:size(M,1))',M];
@@ -589,11 +603,16 @@ if strcmp(wantfile,'wantfile_yes')
     M=[];
     for i=1:size(headerline,1)
         fil=deblank(rawfilelist(i,:));
-        N=csvread(fil,1,0);
+        N=readmatrix(fil,'Range',[1,0]); %RRH Add
+        %N=csvread(fil,1,0);
         M=[M;N]; clear N
         if i==1 % not necessary to do this each time.
-           [header]=textread(fil,'%s',1,'delimiter','\n');
-           header=strvcat(header);
+            fileID=fopen(fil); %RRH Add
+            header=textscan(fileID,'%s',1,'delimiter','\n'); %RRH Add
+            fclose(fileID); %RRH Add
+            header=char(header); %RRH add
+            %[header]=textread(fil,'%s',1,'delimiter','\n');
+            %header=strvcat(header);
         end    
     end
         format=['%4.3f,%7.6f'];
@@ -690,7 +709,7 @@ else % variable Year is present in file
     % Valid Years are only between 1971 to 2070
     Year(find(Year<=70),1)=Year(find(Year<=70),1)+2000;
     Year(find(Year>70 & Year<100),1)=Year(find(Year>70 & Year<100),1)+1900;
-    if ~isempty(find(Year<=1970)) || ~isempty(find(Year>2070))
+    if ~isempty(Year<=1970) || ~isempty(Year>2070)
     error('Invalid data in variable ''Year'''); % No electronic TDR record before 1970 !?   
     end
     time=datenum(Year,Month,Day,Hour,Minute,Second);
@@ -1072,7 +1091,8 @@ if ~isempty(dt)
         %% PDI
         if i~=size(dt,1)
             pdi=round( (tab{i+1,1}(1:coltime) - max(tab{i,1}(:,coltime))) * 86400 ) ;
-        else pdi=NaN ;
+        else 
+            pdi=NaN ;
         end
         %% IDZ
         if i==1
@@ -1275,7 +1295,7 @@ end
 
 %% FUNCTION : GET PARAMETERS    
 function param=yt_getParameters(inputfile,dataformat,ZocString,ParamLineZoc,timemultiple,depthmultiple,depth_zone,...
-    ParamLineBot,wantfile,NightDayLightCutoff,ThermoclineGradient,intervaltime,intervaldepth,version,ProcessTime);
+    ParamLineBot,wantfile,NightDayLightCutoff,ThermoclineGradient,intervaltime,intervaldepth,version,ProcessTime)
 
 param=strvcat('%[FILE/FORMAT]',...
              ['%   Input file = ',inputfile ],...
@@ -1298,7 +1318,7 @@ param=strvcat(param,...
               ['%   Depth Resolution = ',num2str(intervaldepth),' m'],...
               ['%   Minimum Duration of analyzed dives: ',num2str(timemultiple*intervaltime),' s'],...
               ['%   Minimum Depth of analyzed dives: ',num2str(depthmultiple*intervaldepth),' m'],...
-              ['%   Date and Time Processed (Computer Time) = ', datestr(ProcessTime,0) ],...
+              ['%   Date and Time Processed (Computer Time) = ', datetime(ProcessTime,0) ],...
               '%[VERSION]',...
               ['%   Program Version = ', version ],...
               '%');

@@ -38,7 +38,7 @@ end
 
 
 %% Step 3 - Load, prep file, and DA
-clear all
+clear
 file1=dir('*tdr_clean.csv'); %SMRU tag files should end in "tdr_clean.csv"
 file2=dir('*Archive.csv'); %WC files should end in "Archive.csv"
 file3=dir('*tdr.csv'); %kami tag files should end in "tdr.csv"
