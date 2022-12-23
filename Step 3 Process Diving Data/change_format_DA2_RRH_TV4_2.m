@@ -159,6 +159,10 @@ function change_format_DA2_RRH_TV4_2(filename,Start,End,TOPPID)
                 offset = hours(7)+minutes(58)+seconds(57);
                 compress = minutes(2)+seconds(10); 
                 Cut=datetime(2011,4,7,4,25,55)+offset;
+            elseif TOPPID==2011018
+                offset = hours(7)+minutes(59)+seconds(2); %datetime(2011,2,20,2,40,32)-datetime(2011,2,19,18,41,30)
+                compress = minutes(2)+seconds(27); % datetime(2011,5,4,11,46,47)-datetime(2011,5,4,11,44,20)
+                Cut=0;
             elseif TOPPID==2011019
                 offset = hours(7)+minutes(59)+seconds(54);
                 compress = minutes(3)+seconds(6);
@@ -175,6 +179,14 @@ function change_format_DA2_RRH_TV4_2(filename,Start,End,TOPPID)
                 offset = hours(7)+minutes(50)+seconds(22);
                 compress = minutes(1)+seconds(45);
                 Cut=datetime(2012,3,8,23,5,35)+offset;
+            elseif TOPPID==2012014
+                offset = hours(8)+minutes(1)+seconds(55); %datetime(2012,2,20,6,30,46)-datetime(2012,2,19,22,28,50)
+                compress = minutes(2)+seconds(28); %datetime(2012,4,30,6,27,40)-datetime(2012,4,30,6,25,12)
+                Cut=0;
+            elseif TOPPID==2012037
+                offset = hours(5)+minutes(41)+seconds(32); % datetime(2012,6,4,3,12,12)-datetime(2012,6,3,21,30,40)
+                compress = minutes(4)+seconds(2); % datetime(2012,9,23,22,39,42)-datetime(2012,9,23,22,35,40)
+                Cut=datetime(2012,9,23,22,46,57);             
             elseif TOPPID==2012038
                 offset = hours(5)+minutes(41)+seconds(0);
                 compress = minutes(5)+seconds(57);
@@ -235,14 +247,46 @@ function change_format_DA2_RRH_TV4_2(filename,Start,End,TOPPID)
                 offset = hours(8)+minutes(0)+seconds(28);
                 compress = minutes(4)+seconds(46);
                 Cut=0; 
+            elseif TOPPID==2014015
+                offset = hours(8)+minutes(30)+seconds(35); % datetime(2014,2,16,19,20,56)-datetime(2014,2,16,10,50,25)
+                compress = minutes(2)+seconds(28); % datetime(2014,4,20,14,42,20)-datetime(2014,4,20,14,39,52)
+                Cut=0;
             elseif TOPPID==2014018
                 offset = hours(8)+minutes(0)+seconds(20);
                 compress = minutes(4)+seconds(15); 
                 Cut=0; 
+            elseif TOPPID==2015001
+                offset = hours(8)+minutes(0)+seconds(25); % datetime(2015,2,10,1,25,16)-datetime(2015,2,9,17,24,55)
+                compress = seconds(22); % datetime(2015,4,13,20,44,10)-datetime(2015,4,13,20,43,48)
+                Cut=0;
             elseif TOPPID==2015003
                 offset = hours(7)+minutes(45)+seconds(47);
                 compress = minutes(3)+seconds(29); 
                 Cut=0; 
+            elseif TOPPID==2015009
+                offset = hours(8)+minutes(0)+seconds(31); % datetime(2015,2,18,22,9,16)-datetime(2015,2,18,14,8,45)
+                compress = minutes(4)+seconds(15); % datetime(2015,5,10,4,48,21)-datetime(2015,5,10,4,44,8)
+                Cut=0; 
+            elseif TOPPID==2015010
+                offset = hours(8)+minutes(0)+seconds(28); % datetime(2015,2,21,3,55,48)-datetime(2015,2,20,19,55,20)
+                compress = minutes(4)+seconds(1); % datetime(2015,5,20,3,18,13)-datetime(2015,5,20,3,14,12)
+                Cut=0;
+            elseif TOPPID==2016004
+                offset = hours(8)+minutes(2)+seconds(10); % (2016,2,11,3,21,4)-datetime(2016,2,10,19,18,50)
+                compress = minutes(2)+seconds(57); % datetime(2016,4,23,14,14,5)-datetime(2016,4,23,14,11,8)
+                Cut=0;
+            elseif TOPPID==2016011
+                offset = hours(8)+minutes(0)+seconds(50); % datetime(2016,2,19,20,5,16)-datetime(2016,2,19,12,4,30)
+                compress = minutes(2)+seconds(25); % datetime(2016,5,12,0,42,45)-datetime(2016,5,12,0,40,20)
+                Cut=0;
+            elseif TOPPID==2017002
+                offset = hours(8)+minutes(0)+seconds(27); % datetime(2017,2,16,14,29,52)-datetime(2017,2,16,6,29,25)
+                compress = minutes(3)+seconds(58); % datetime(2017,5,17,6,23,42)-datetime(2017,5,17,6,19,44)
+                Cut=0; 
+            elseif TOPPID==2017004
+                offset = hours(8)+minutes(0)+seconds(23); % datetime(2017,2,14,17,51,16)-datetime(2017,2,14,9,50,50)
+                compress = minutes(3)+seconds(24); %datetime(2017,4,22,11,20,28)-datetime(2017,4,22,11,17,4)
+                Cut=0;
             else
                 offset=0; 
                 compress=0; 
@@ -332,9 +376,11 @@ function change_format_DA2_RRH_TV4_2(filename,Start,End,TOPPID)
         DepthRes=resolution_DepthRes(data.Depth);
 
         %Step 8.1: detect if dive surface intervals have offset >10m
-        running_surface = movmin(data.Depth,hours(24*2),'SamplePoints',data.Time);
+        running_surface = movmin(data.Depth,hours(2),'SamplePoints',data.Time);
         [f,xi]=ecdf(running_surface); %figure; ecdf(running_surface,'Bounds','on');
-        if abs(xi(3)-xi(2))<10 % if there's a large jump, might be due to surface spikes
+        if TOPPID==2013032 && size(strfind(filename,'-out-Archive'),1)>0 % has weird surface data 
+            minsurface=0; % set manually through visual inspection
+        elseif abs(xi(3)-xi(2))>10 % if there's a large jump, might be due to surface spikes
             minsurface=xi(3); 
         else
             minsurface=interp1(f,xi,0.05);
