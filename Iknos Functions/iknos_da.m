@@ -142,7 +142,7 @@ ProcessTime=datetime("now");
 
 %% IKNOS_DA: import data
 % filename=inputfile; %things have been written in parts and merge latter... (could be more simple)
-potential_variables=strvcat('Year','Month','Day','Hour','Minute','Second','ampm',... % temporal recognized variables
+potential_variables=char('Year','Month','Day','Hour','Minute','Second','ampm',... % temporal recognized variables
                             'depth','itemp','etemp','alight','blight','speed','salinity',... % data recognized variables
                             'xa','xb','xc','xd','xe','xf','xg','xh','xi','xj',... % extra variables numeric
                             'ya','yb','yc','yd','ye','yf','yg','yh','yi','yj'); % extra variables text
@@ -175,21 +175,21 @@ for i=1:s
             error('Unrecognize variable name: %s',string);
         else
            
-            if ismember(string,strvcat('Year','Month','Day','Hour','Minute','Second'),'rows')
+            if ismember(string,char('Year','Month','Day','Hour','Minute','Second'),'rows')
             format=[format,' %u'];
                 if i==1
                 variables2=string;
                 else
                 variables2=[variables2,',',string];
                 end
-            elseif ismember(string,strvcat('xa','xb','xc','xd','xe','xf','xg','xh','xi','xj'),'rows')
+            elseif ismember(string,char('xa','xb','xc','xd','xe','xf','xg','xh','xi','xj'),'rows')
             format=[format,' %f'];
                 if i==1
                 variables2=string;
                 else
                 variables2=[variables2,',',string];
                 end
-            elseif ismember(string,strvcat('ya','yb','yc','yd','ye','yf','yg','yh','yi','yj','ampm'),'rows')
+            elseif ismember(string,char('ya','yb','yc','yd','ye','yf','yg','yh','yi','yj','ampm'),'rows')
             format=[format,' %s']; 
                 if i==1
                 variables2=string;
@@ -240,13 +240,13 @@ if ismember('Second',variables,'rows')
     sec_exist=1;
         for i=1:s
             var=deblank(variables(i,:));
-            if ismember(var,strvcat('Year','Month','Day','Hour','Minute'),'rows')
+            if ismember(var,char('Year','Month','Day','Hour','Minute'),'rows')
             format1=[format1,' %*u'];
-            elseif ismember(var,strvcat('Second'),'rows')
+            elseif ismember(var,char('Second'),'rows')
             format1=[format1,' %u'];
-            elseif ismember(var,strvcat('xa','xb','xc','xd','xe','xf','xg','xh','xi','xj'),'rows')
+            elseif ismember(var,char('xa','xb','xc','xd','xe','xf','xg','xh','xi','xj'),'rows')
             format1=[format1,' %*f'];
-            elseif ismember(var,strvcat('ya','yb','yc','yd','ye','yf','yg','yh','yi','yj','ampm'),'rows')
+            elseif ismember(var,char('ya','yb','yc','yd','ye','yf','yg','yh','yi','yj','ampm'),'rows')
             format1=[format1,' %*s'];   
             else % that is the non temporal recognized variables (e.g. depth etemp alight speed...)
             format1=[format1,' %*f'];           
@@ -256,13 +256,13 @@ if ismember('Second',variables,'rows')
         sec_exist=0;
         for i=1:s
             var=deblank(variables(i,:));
-            if ismember(var,strvcat('Year','Month','Day','Hour','Second'),'rows')
+            if ismember(var,char('Year','Month','Day','Hour','Second'),'rows')
             format1=[format1,' %*u'];
-            elseif ismember(var,strvcat('Minute'),'rows')
+            elseif ismember(var,char('Minute'),'rows')
             format1=[format1,' %u'];
-            elseif ismember(var,strvcat('xa','xb','xc','xd','xe','xf','xg','xh','xi','xj'),'rows')
+            elseif ismember(var,char('xa','xb','xc','xd','xe','xf','xg','xh','xi','xj'),'rows')
             format1=[format1,' %*f'];
-            elseif ismember(var,strvcat('ya','yb','yc','yd','ye','yf','yg','yh','yi','yj','ampm'),'rows')
+            elseif ismember(var,char('ya','yb','yc','yd','ye','yf','yg','yh','yi','yj','ampm'),'rows')
             format1=[format1,' %*s'];   
             else % that is the non temporal recognized variables (e.g. depth etemp alight speed...)
             format1=[format1,' %*f'];           
@@ -418,7 +418,7 @@ end
         file=inputfile ;
     end
     finaloutputstatfile=[file,'_','iknos_DiveStat.csv']; clear id;
-    finaloutputrawfile=[file,'_','iknos_raw_data.csv']; 
+    finaloutputrawfile=[file,'_','iknos_rawzoc_data.csv']; 
     finaloutputfig1file=[file,'_','iknos_fig_zoc.fig'];
     finaloutputfig2file=[file,'_','iknos_fig_da.fig']; clear file
 
@@ -476,7 +476,7 @@ param=yt_getParameters(inputfile,dataformat,ZocString,ParamLineZoc,timemultiple,
     set(fig2,'visible','off');
     close all
 %% open stat file and add the dive number column
-    M=readmatrix(finaloutputstatfile,'Range',[1,0]); %RRH Add
+    M=readmatrix(finaloutputstatfile,'Range',[2,1]); %RRH Add
     %M=csvread(finaloutputstatfile,1,0);
     fileID=fopen(finaloutputstatfile); %RRH Add
     header=textscan(fileID,'%s',1,'delimiter','\n'); %RRH Add
@@ -530,9 +530,9 @@ else  %%% This is if the file is processed in several chunks
     rawfilelist=[];
     for i=1:size(headerline,1)
     outputstatfile=['ImprobableTemporaryFileNameToDelete_',num2str(i),'.csv'];
-    statfilelist=strvcat(statfilelist,outputstatfile);
+    statfilelist=char(statfilelist,outputstatfile);
     outputrawfile=['ImprobTempRawFileNameToDelete_',num2str(i),'.csv'];
-    rawfilelist=strvcat(rawfilelist,outputrawfile);
+    rawfilelist=char(rawfilelist,outputrawfile);
         if i~=size(headerline,1)
         block_number=i;
         else
@@ -556,7 +556,7 @@ else  %%% This is if the file is processed in several chunks
     M=[];
     for i=1:size(headerline,1)
         fil=deblank(statfilelist(i,:));
-        N=readmatrix(fil,'Range',[1,0]); %RRH Add
+        N=readmatrix(fil,'Range',[2,1]); %RRH Add
         %N=csvread(fil,1,0);
         M=[M;N]; clear N
         if i==1 % not necessary to do this each time.
@@ -603,7 +603,7 @@ if strcmp(wantfile,'wantfile_yes')
     M=[];
     for i=1:size(headerline,1)
         fil=deblank(rawfilelist(i,:));
-        N=readmatrix(fil,'Range',[1,0]); %RRH Add
+        N=readmatrix(fil,'Range',[2,1]); %RRH Add
         %N=csvread(fil,1,0);
         M=[M;N]; clear N
         if i==1 % not necessary to do this each time.
@@ -709,7 +709,7 @@ else % variable Year is present in file
     % Valid Years are only between 1971 to 2070
     Year(find(Year<=70),1)=Year(find(Year<=70),1)+2000;
     Year(find(Year>70 & Year<100),1)=Year(find(Year>70 & Year<100),1)+1900;
-    if ~isempty(Year<=1970) || ~isempty(Year>2070)
+    if ~isempty(find(Year<=1970)) || ~isempty(find(Year>2070))
     error('Invalid data in variable ''Year'''); % No electronic TDR record before 1970 !?   
     end
     time=datenum(Year,Month,Day,Hour,Minute,Second);
@@ -810,7 +810,7 @@ end
     
 for i=1:s
     var=deblank(variables(i,:));
-    if ~ismember(var,strvcat('Year','Month','Day','Hour','Minute','Second','depth',... % only recognized data variables
+    if ~ismember(var,char('Year','Month','Day','Hour','Minute','Second','depth',... % only recognized data variables
             'xa','xb','xc','xd','xe','xf','xg','xh','xi','xj',...   % entering var name this way permits to avoid later modification if the number of data variables changes
             'ya','yb','yc','yd','ye','yf','yg','yh','yi','yj'),'rows') 
     eval(['matrix2=[matrix2',',',var,'];']);
@@ -818,7 +818,7 @@ for i=1:s
     eval(['col',var,'=',num2str(2+inc),';']);
     var_mat2=[var_mat2,',',var];
     inc=inc+1;
-elseif ismember(var,strvcat('xa','xb','xc','xd','xe','xf','xg','xh','xi','xj'),'rows') % only additional numeric variables
+elseif ismember(var,char('xa','xb','xc','xd','xe','xf','xg','xh','xi','xj'),'rows') % only additional numeric variables
     eval(['matrix3=[matrix3',',',var,'];']);  
         if isempty(var_mat3)
         var_mat3=var;   
@@ -826,7 +826,7 @@ elseif ismember(var,strvcat('xa','xb','xc','xd','xe','xf','xg','xh','xi','xj'),'
         var_mat3=[var_mat3,',',var];
         end
     eval(['clear ',var,]);
-    elseif ismember(var,strvcat('ya','yb','yc','yd','ye','yf','yg','yh','yi','yj'),'rows') % only additional text variables
+    elseif ismember(var,char('ya','yb','yc','yd','ye','yf','yg','yh','yi','yj'),'rows') % only additional text variables
         if isempty(var_txt)
         var_txt=var;   
     eval(['clear ',var,]);
@@ -1297,14 +1297,14 @@ end
 function param=yt_getParameters(inputfile,dataformat,ZocString,ParamLineZoc,timemultiple,depthmultiple,depth_zone,...
     ParamLineBot,wantfile,NightDayLightCutoff,ThermoclineGradient,intervaltime,intervaldepth,version,ProcessTime)
 
-param=strvcat('%[FILE/FORMAT]',...
+param=char('%[FILE/FORMAT]',...
              ['%   Input file = ',inputfile ],...
              ['%   Input Data Format = ', dataformat],...
               '%[ZERO OFFSET CORRECTION]');
 
-param=strvcat(param,ParamLineZoc);
+param=char(param,ParamLineZoc);
 
-param=strvcat(param,...
+param=char(param,...
               '%[DIVE ANALYSIS]',...
               ['%   TimeMultiple = ',num2str(timemultiple) ],...
               ['%   DepthMultiple = ',num2str(depthmultiple)],...
@@ -1318,7 +1318,7 @@ param=strvcat(param,...
               ['%   Depth Resolution = ',num2str(intervaldepth),' m'],...
               ['%   Minimum Duration of analyzed dives: ',num2str(timemultiple*intervaltime),' s'],...
               ['%   Minimum Depth of analyzed dives: ',num2str(depthmultiple*intervaldepth),' m'],...
-              ['%   Date and Time Processed (Computer Time) = ', datetime(ProcessTime,0) ],...
+              ['%   Date and Time Processed (Computer Time) = ', datestr(ProcessTime,0) ],...
               '%[VERSION]',...
               ['%   Program Version = ', version ],...
               '%');

@@ -364,20 +364,20 @@ function change_format_DA2_RRH_TV4_2(filename,Start,End,TOPPID)
 
     %Step 10: Plot and save QC figs
     if size(strfind(filename,'-out-Archive'),1)>0
-        rawzocdatafile=dir([strtok(filename,'-') '_DAprep_full_iknos_raw_data.csv']);
-        rawzocdata=readtable(rawzocdatafile.name,'HeaderLines',25,'ReadVariableNames',true);
+        rawzocdatafile=dir([strtok(filename,'-') '_DAprep_full_iknos_rawzoc_data.csv']);
+        rawzocdata=readtable(rawzocdatafile.name,'HeaderLines',26,'ReadVariableNames',true);
         rawzocdata.Time=datetime(rawzocdata.time,'ConvertFrom','datenum');
 
         DiveStatfile=dir([strtok(filename,'-') '_DAprep_full_iknos_DiveStat.csv']);
-        DiveStat=readtable(DiveStatfile.name,'HeaderLines',25,'ReadVariableNames',true);
+        DiveStat=readtable(DiveStatfile.name,'HeaderLines',26,'ReadVariableNames',true);
         DiveStat.Time=datetime(DiveStat.Year,DiveStat.Month,DiveStat.Day,DiveStat.Hour,DiveStat.Min,DiveStat.Sec);
     else
-        rawzocdatafile=dir([strtok(filename,'.') '_DAprep_full_iknos_raw_data.csv']);
-        rawzocdata=readtable(rawzocdatafile.name,'HeaderLines',25,'ReadVariableNames',true);
+        rawzocdatafile=dir([strtok(filename,'.') '_DAprep_full_iknos_rawzoc_data.csv']);
+        rawzocdata=readtable(rawzocdatafile.name,'HeaderLines',26,'ReadVariableNames',true);
         rawzocdata.Time=datetime(rawzocdata.time,'ConvertFrom','datenum');
 
         DiveStatfile=dir([strtok(filename,'.') '_DAprep_full_iknos_DiveStat.csv']);
-        DiveStat=readtable(DiveStatfile.name,'HeaderLines',25,'ReadVariableNames',true);
+        DiveStat=readtable(DiveStatfile.name,'HeaderLines',26,'ReadVariableNames',true);
         DiveStat.Time=datetime(DiveStat.Year,DiveStat.Month,DiveStat.Day,DiveStat.Hour,DiveStat.Min,DiveStat.Sec);
     end
 
