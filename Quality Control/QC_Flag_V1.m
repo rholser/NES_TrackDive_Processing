@@ -4,7 +4,7 @@
 % Check QC'd TDRs and designate quality control flags based on completeness of data across each
 % deployment, saves updated tagmetadata into MetaData.mat
 % 
-%Update Log:
+%Update Log:6
 % 31-Dec-2022 - add QC flags to TagMetaDataAll, currently skips 2002 and 2003.
 
 clear
@@ -30,9 +30,8 @@ for i=16:size(MetaDataAll,1) %Skips 2002 and 2003 for the time being
     %If there is a DiveStat file, check for data continuity
     if exist('data','var')==1
         Days=round(datenum(data.DateTime-MetaDataAll.DepartDate(i)));
-        Start=round(data.JulDate(1)-datenum(MetaDataAll.DepartDate(i)));
-        End=round(data.JulDate(end)-datenum(MetaDataAll.DepartDate(i)));
-        Days=[Start; Days; End];
+        End=round(datenum(MetaDataAll.ArriveDate(i))-datenum(MetaDataAll.DepartDate(i)));
+        Days=[0; Days; End];
 
         %Calculate day differences between sunsequent dives and look for
         %gaps of 2 or more days.
@@ -80,9 +79,8 @@ for i=16:size(MetaDataAll,1) %Skips 2002 and 2003 for the time being
     %If there is a DiveStat file, check for data continuity
     if exist('data','var')==1
         Days=round(datenum(data.DateTime-MetaDataAll.DepartDate(i)));
-        Start=round(data.JulDate(1)-datenum(MetaDataAll.DepartDate(i)));
-        End=round(data.JulDate(end)-datenum(MetaDataAll.DepartDate(i)));
-        Days=[Start; Days; End];
+        End=round(datenum(MetaDataAll.ArriveDate(i))-datenum(MetaDataAll.DepartDate(i)));
+        Days=[0; Days; End];
 
         %Calculate day differences between sunsequent dives and look for
         %gaps of 2 or more days.
@@ -130,9 +128,8 @@ for i=16:size(MetaDataAll,1) %Skips 2002 and 2003 for the time being
     %If there is a DiveStat file, check for data continuity
     if exist('data','var')==1
         Days=round(datenum(data.DateTime-MetaDataAll.DepartDate(i)));
-        Start=round(data.JulDate(1)-datenum(MetaDataAll.DepartDate(i)));
-        End=round(data.JulDate(end)-datenum(MetaDataAll.DepartDate(i)));
-        Days=[Start; Days; End];
+        End=round(datenum(MetaDataAll.ArriveDate(i))-datenum(MetaDataAll.DepartDate(i)));
+        Days=[0; Days; End];
 
         %Calculate day differences between sunsequent dives and look for
         %gaps of 2 or more days.
