@@ -1,9 +1,16 @@
-%Rachel Holser (rholser@ucsc.edu)
-%Last Updated: 19-Aug-2022
-
-%Complies relevant metadata into a .mat file for use in eseal data
-%processing - MetaData.mat is requires for both file assembly and Appending
-%steps.
+%Compile_Metadata is the first step in processing elephant seal biologging data. It complies metadata from 
+% .csv files into a single .mat file (MetaData.mat) that is used throughout all processing steps and
+% in final file assembly (both netCDF and mat file formats).
+%
+%Expected input files: startstop.csv (required for next steps)
+%                       tagmetadata.csv (required for next steps)
+%                       foragingsuccess.csv (optional)
+%
+%Created by: Rachel Holser (rholser@ucsc.edu)
+%
+%V1
+% Update Log:
+% 31-Dec-2022 - Updates imports for new startstop and tagmetadata fields
 
 clear
 %% read Froaging Success
@@ -89,58 +96,62 @@ opts.ExtraColumnsRule = "ignore";
 opts.EmptyLineRule = "read";
 
 % Specify variable properties
-opts = setvaropts(opts, ["ID", "DeployDate", "DepartDate", "RecoverDate",...
-    "ArrivalDate"], "WhitespaceRule", "preserve");
-opts = setvaropts(opts, ["Season", "ID", "DeployDate", "DepartDate",...
-    "RecoverDate", "ArrivalDate"], "EmptyFieldRule", "auto");
+opts = setvaropts(opts, ["ID", "DeployDate", "DepartDate", "RecoverDate", "ArrivalDate"],...
+    "WhitespaceRule", "preserve");
+opts = setvaropts(opts, ["Season", "ID", "DeployDate", "DepartDate", "RecoverDate", "ArrivalDate"],...
+    "EmptyFieldRule", "auto");
 
 % Import the data
 ForagingSuccessAll = readtable("foragingsuccess.csv", opts);
 
-%% Clear temporary variables
+% Clear temporary variables
 clear opts
 
-%% read start/stop data
-MetaDataAll=readtable('startstop_female.csv');
+%% Read start/stop data
+MetaDataAll=readtable('startstop_female_datapaper.csv');
 
-%% read tagging metadata
-%Setup the Import Options and import the data
-opts = delimitedTextImportOptions("NumVariables", 13);
+%% Read tagging metadata
+% Set up the Import Options and import the data
+opts = delimitedTextImportOptions("NumVariables", 35);
 
-% Specify range and delimiter of data to import
+% Specify range and delimiter
 opts.DataLines = [2, Inf];
 opts.Delimiter = ",";
 
 % Specify column names and types
-opts.VariableNames = ["SealID", "TOPPID", "SatTagType", "SatTagID",...
-    "SatTagPTT", "SatTagComment", "TDR1Type", "TDR1ID", "TDR1Loc",...
-    "TDR1Comment", "TDR2Type", "TDR2ID", "TDR2Loc", "TDR2Comment",...
-    "TDR3Type", "TDR3ID", "TDR3Loc", "TDR3Comment", "Other1", "Other1Loc",...
-    "Other1Comment", "Other2", "Other2Loc", "Other2Comment", "Other3",...
-    "Other3Loc", "Other3Comment"];
-opts.VariableTypes = ["string", "double", "string", "string", "string",...
-    "string", "string", "string", "string","string", "string", "string",...
-    "string",  "string", "string",  "string", "string",  "string", "string",...
-    "string", "string", "string", "string", "string", "string", "string", "string"];
+opts.VariableNames = ["SealID", "TOPPID", "SatTagManufacturer", "SatTagType", "SatTagID", "SatTagPTT",...
+    "SatTagQC", "SatTagComment", "TDR1Manufacturer", "TDR1Type", "TDR1ID", "TDR1Loc", "TDR1QC",...
+    "TDR1Comments", "TDR1Manufacturer1", "TDR2Type", "TDR2ID", "TDR2Loc", "TDR2QC", "TDR2Comments",...
+    "TDR1Manufacturer2", "TDR3Type", "TDR3ID", "TDR3Loc", "TDR3QC", "TDR3Comment", "Other1", "Other1Loc",...
+    "Other1Comment", "Other2", "Other2Loc", "Other2Comment", "Other3", "Other3Loc", "Other3Comment"];
+opts.VariableTypes = ["string", "double", "string", "string", "string", "double", "string", "string",...
+    "string", "string", "string", "string", "double", "string", "string", "string", "string", "string",...
+    "double", "string", "string", "string", "string", "string", "double", "string", "string", "string",...
+    "string", "string", "string", "string", "string", "string", "string"];
 
 % Specify file level properties
 opts.ExtraColumnsRule = "ignore";
 opts.EmptyLineRule = "read";
 
 % Specify variable properties
-% 1. Preserve whitespace in text fields
-opts = setvaropts(opts, ["SealID", "SatTagID", "SatTagComment", "TDR1Comment",...
-    "TDR2Comment", "TDR3Comment", "Other1", "Other1Loc", "Other1Comment",...
-    "Other2", "Other2Loc", "Other2Comment"], "WhitespaceRule", "preserve");
-% 2. How to treat empty fields - 'auto' will fill empty fields differently
-% depending on data type
-opts = setvaropts(opts, ["SealID", "SatTagType", "SatTagID", "SatTagComment",...
-    "TDR1Type", "TDR1Loc", "TDR1Comment", "TDR2Type", "TDR2Loc", "TDR2Comment",...
-    "TDR3Type", "TDR3Loc", "TDR3Comment", "Other1", "Other1Loc", "Other1Comment",...
-    "Other2", "Other2Loc", "Other2Comment"], "EmptyFieldRule", "auto");
+opts = setvaropts(opts, ["SealID", "SatTagManufacturer", "SatTagType", "SatTagID", "SatTagQC",...
+    "SatTagComment", "TDR1Manufacturer", "TDR1Type", "TDR1ID", "TDR1Loc", "TDR1Comments",...
+    "TDR1Manufacturer1", "TDR2Type", "TDR2ID", "TDR2Loc", "TDR2Comments", "TDR1Manufacturer2", "TDR3Type",...
+    "TDR3ID", "TDR3Loc", "TDR3Comment", "Other1", "Other1Loc", "Other1Comment", "Other2", "Other2Loc",...
+    "Other2Comment", "Other3", "Other3Loc", "Other3Comment"], "WhitespaceRule", "preserve");
+opts = setvaropts(opts, ["SealID", "SatTagManufacturer", "SatTagType", "SatTagID", "SatTagQC",...
+    "SatTagComment", "TDR1Manufacturer", "TDR1Type", "TDR1ID", "TDR1Loc", "TDR1Comments",...
+    "TDR1Manufacturer1", "TDR2Type", "TDR2ID", "TDR2Loc", "TDR2Comments", "TDR1Manufacturer2", "TDR3Type",...
+    "TDR3ID", "TDR3Loc", "TDR3Comment", "Other1", "Other1Loc", "Other1Comment", "Other2", "Other2Loc",...
+    "Other2Comment", "Other3", "Other3Loc", "Other3Comment"], "EmptyFieldRule", "auto");
+opts = setvaropts(opts, ["TDR1QC", "TDR2QC", "TDR3QC"], "TrimNonNumeric", true);
+opts = setvaropts(opts, ["TDR1QC", "TDR2QC", "TDR3QC"], "ThousandsSeparator", ",");
 
 % Import the data
 TagMetaDataAll = readtable("tagmetadata.csv", opts);
+
+% Clear temporary variables
+clear opts
 
 %% Save all metadata structure into single .mat file for later use
 save('MetaData.mat','MetaDataAll','ForagingSuccessAll','TagMetaDataAll')

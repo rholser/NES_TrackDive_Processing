@@ -4,7 +4,7 @@
 %updated 26-Feb-2021
 %Updated 06-Sep-2022: Added variables "Temp" and "Light" for ScoutDSA tags
 
-function [output, outputstring]=DA_data_compiler_RRH_TV4(data)
+function [output, outputstring]=DA_data_compiler_V4(data)
 
 m=size(data,2);
 data_names=data.Properties.VariableNames;

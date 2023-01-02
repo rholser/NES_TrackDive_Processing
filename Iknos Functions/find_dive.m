@@ -18,7 +18,7 @@ function [want,newdepth,indexes]=find_dive(time,timemultiple,depth,depthmultiple
 %  find_dive
 
 %%%-----DEPTH---------
-    intervaldepth=resolution_DepthRes(depth); % changed bu Arina
+    intervaldepth=resolution_DepthRes(depth); % changed by Arina
 
         if intervaldepth<0.1
         depth=yt_round2nearest(depth,0.1);

@@ -100,7 +100,7 @@ function iknos_da(inputfile,dataformat,timemultiple,depthmultiple,depth_zone,wan
 %       detect the potential analyses to do depending on the available
 %       variables.
 %
-% VERSION: 2.1/1.1
+% VERSION: 2.3/1.2
 %       Version coding is as follow: first number for Dive analysis
 %       program, Second number for Zoc program.
 %

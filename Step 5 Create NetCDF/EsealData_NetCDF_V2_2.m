@@ -63,8 +63,8 @@ for i=1:size(TagMetaDataAll,1)
     netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"), 'creation_date',string(datetime("now")));
     netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "MATLAB Version", version);
     netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "R Version", '');
-    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "foieGras Version", '');
-    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "DA-ZOC Version", '2.2/1.1');
+    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "AniMotum Version", '');
+    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "DA-ZOC Version", '2.3/1.2');
     netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "Data_Owner", 'Daniel Costa');
     netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "Is_Data_Public",...
         'Yes: data can be used freely as long as data owner is properly cited');
@@ -76,11 +76,11 @@ for i=1:size(TagMetaDataAll,1)
 
     %%%%%Animal MetaData    
     netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "____ANIMAL_METADATA____",'________');
-    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "SealID",'');
+    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "SealID", MetaDataAll.FieldID(j));
     netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "Species", 'Mirounga angustirostris');
-    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "Sex", '');
-    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "Age_Class", '');
-    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "Birth_Year", '');
+    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "Sex", MetaDataAll.Sex(j));
+    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "Age_Class", MetaDataAll.AgeClass(j));
+    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "Birth_Year", MetaDataAll.BrithYear(j));
     netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "Had_Pup", '');
     
     %%%%%Deployment MetaData
@@ -89,6 +89,7 @@ for i=1:size(TagMetaDataAll,1)
     netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "Deployment_Year", '');
     netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "Deployment_Season", string(MetaDataAll.Season(j)));
     netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "Instruments_Recovered", '');
+    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "Manipulation?", MetaDataAll.Manipulation(j));
     netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "Other_Deployments",'' ); %Need to build this in somehow
     netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "Departure_Location", string(MetaDataAll.DepartLoc(j)));
     netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "Departure_Lat", MetaDataAll.DepartLat(j));
@@ -101,10 +102,10 @@ for i=1:size(TagMetaDataAll,1)
     
     %%%%%Data Quality
     netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "____DATA_QUALITY____",'________');
-    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "Track_QC_Flag",'');
-    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "TDR1_QC_Flag",'');
-    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "TDR2_QC_Flag",'');
-    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "TDR3_QC_Flag",'');
+    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "Track_QC_Flag",TagMetaDataAll.SatTagQC(i));
+    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "TDR1_QC_Flag",TagMetaDataAll.TDR1QC(i));
+    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "TDR2_QC_Flag",TagMetaDataAll.TDR2QC(i));
+    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "TDR3_QC_Flag",TagMetaDataAll.TDR3QC(i));
     netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "TDR1_SamplingFrequency", '');
     netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "TDR1_DepthResolution", '');
     netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "TDR2_SamplingFrequency", '');
@@ -423,7 +424,7 @@ for i=1:size(TagMetaDataAll,1)
     %%%%can we have group attributes?  Need to figure out where to put this
     %%%%information
     %netcdf.putAtt(CuratedGrpID,CuratedTrackGrpID,"Description", "Locations, location classes, and" + ...
-    %    " errors (if available) of Argos and GPS data combined and prepared for foieGras processing.");
+    %    " errors (if available) of Argos and GPS data combined and prepared for AniMotum processing.");
     netcdf.endDef(ncid);
     if ~isempty(data)
         netcdf.putVar(CuratedTrackGrpID,CleanTrackDate,string(data.Date));
@@ -652,7 +653,7 @@ netcdf.close(ncid);
     TDR2SubGrpID=netcdf.defGrp(ncid,'TDR2_SUB');
     TDR3GrpID=netcdf.defGrp(ncid,'TDR3');
     TDR3SubGrpID=netcdf.defGrp(ncid,'TDR3_SUB');
-    foieGrasGrpID=netcdf.defGrp(ncid,'FOIE_GRAS');
+    AniMotumGrpID=netcdf.defGrp(ncid,'FOIE_GRAS');
 
     %Global Attributes
     %%%%%Creation/versions/permissions
@@ -660,7 +661,7 @@ netcdf.close(ncid);
     netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"), 'creation_date',string(datetime("now")));
     netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "MATLAB Version", version);
     netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "R Version", '');
-    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "foieGras Version", '');
+    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "AniMotum Version", '');
     netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "DA-ZOC Version", '2.2/1.1');
     netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "Data_Owner", 'Daniel Costa');
     netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "Is_Data_Public",...
@@ -1476,73 +1477,73 @@ netcdf.close(ncid);
     end
     clear data
 
-    %foieGras Track
+    %AniMotum Track
     try
-        data=readtable(strcat(TrackFoieGrasFiles.folder(TrackFoieGrasFiles.TOPPID==TOPPID),'\',...
-            TrackFoieGrasFiles.filename(TrackFoieGrasFiles.TOPPID==TOPPID)));
+        data=readtable(strcat(TrackAniMotumFiles.folder(TrackAniMotumFiles.TOPPID==TOPPID),'\',...
+            TrackAniMotumFiles.filename(TrackAniMotumFiles.TOPPID==TOPPID)));
     end
     
     netcdf.reDef(ncid);
     if exist('data','var')==1
-        TrackfoieGrasdimid=netcdf.defDim(foieGrasGrpID,'TrackfoieGrasdimid',size(data,1));
+        TrackAniMotumdimid=netcdf.defDim(AniMotumGrpID,'TrackAniMotumdimid',size(data,1));
     else
-        TrackfoieGrasdimid=netcdf.defDim(foieGrasGrpID,'TrackfoieGrasdimid',0);
+        TrackAniMotumdimid=netcdf.defDim(AniMotumGrpID,'TrackAniMotumdimid',0);
     end
 
-    foieGrasLat=netcdf.defVar(foieGrasGrpID,'LAT',"NC_DOUBLE",TrackfoieGrasdimid);
-    netcdf.putAtt(foieGrasGrpID,foieGrasLat,"Description","foieGras track latitudes")
-    netcdf.putAtt(foieGrasGrpID,foieGrasLat,'Units','decimal degrees');
-    foieGrasLon=netcdf.defVar(foieGrasGrpID,'LON',"NC_DOUBLE",TrackfoieGrasdimid);
-    netcdf.putAtt(foieGrasGrpID,foieGrasLon,"Description","foieGras track longitudes")
-    netcdf.putAtt(foieGrasGrpID,foieGrasLon,'Units','decimal degrees');
-    foieGrasDate=netcdf.defVar(foieGrasGrpID,'DATE',"NC_STRING",TrackfoieGrasdimid);
-    netcdf.putAtt(foieGrasGrpID,foieGrasDate,"Description","Date and time of foieGras interpolated location estimate")
-    netcdf.putAtt(foieGrasGrpID,foieGrasDate,'Time Zone','UTC');
-    foieGrasX=netcdf.defVar(foieGrasGrpID,'X',"NC_DOUBLE",TrackfoieGrasdimid);
-    netcdf.putAtt(foieGrasGrpID,foieGrasX,"Description","foieGras interpolated location estimate longitude in km, World Mercator Projection");
-    netcdf.putAtt(foieGrasGrpID,foieGrasX,'Units','km');
-    foieGrasY=netcdf.defVar(foieGrasGrpID,'Y',"NC_DOUBLE",TrackfoieGrasdimid);
-    netcdf.putAtt(foieGrasGrpID,foieGrasY,"Description","foieGras interpolated location estimate latitude in km, World Mercator Projection");
-    netcdf.putAtt(foieGrasGrpID,foieGrasY,'Units','km');
-    foieGrasXse=netcdf.defVar(foieGrasGrpID,'X_SE',"NC_DOUBLE",TrackfoieGrasdimid);
-    netcdf.putAtt(foieGrasGrpID,foieGrasXse,"Description","foieGras interpolated location estimate standard error in longitude");
-    netcdf.putAtt(foieGrasGrpID,foieGrasXse,'Units','km');
-    foieGrasYse=netcdf.defVar(foieGrasGrpID,'Y_SE',"NC_DOUBLE",TrackfoieGrasdimid);
-    netcdf.putAtt(foieGrasGrpID,foieGrasYse,"Description","foieGras interpolated location estimate standard error in latitude");
-    netcdf.putAtt(foieGrasGrpID,foieGrasYse,'Units','km');
-    foieGrasU=netcdf.defVar(foieGrasGrpID,'U',"NC_DOUBLE",TrackfoieGrasdimid);
-    netcdf.putAtt(foieGrasGrpID,foieGrasU,"Description","foieGras estimated velocity in x direction");
-    netcdf.putAtt(foieGrasGrpID,foieGrasU,'Units','m/s');
-    foieGrasV=netcdf.defVar(foieGrasGrpID,'V',"NC_DOUBLE",TrackfoieGrasdimid);
-    netcdf.putAtt(foieGrasGrpID,foieGrasV,"Description","foieGras estimated velocity in y direction");
-    netcdf.putAtt(foieGrasGrpID,foieGrasV,'Units','m/s');
-    foieGrasUse=netcdf.defVar(foieGrasGrpID,'U_SE',"NC_DOUBLE",TrackfoieGrasdimid);
-    netcdf.putAtt(foieGrasGrpID,foieGrasUse,"Description","foieGras estimated standard error of velocity in x direction");
-    netcdf.putAtt(foieGrasGrpID,foieGrasUse,'Units','m/s');
-    foieGrasVse=netcdf.defVar(foieGrasGrpID,'V_SE',"NC_DOUBLE",TrackfoieGrasdimid);
-    netcdf.putAtt(foieGrasGrpID,foieGrasVse,"Description","foieGras estimated standard error of velocity in y direction");
-    netcdf.putAtt(foieGrasGrpID,foieGrasVse,'Units','m/s');
-    foieGrasS=netcdf.defVar(foieGrasGrpID,'S',"NC_DOUBLE",TrackfoieGrasdimid);
-    netcdf.putAtt(foieGrasGrpID,foieGrasS,"Description"," foieGras estimated directionless velocity");
-    netcdf.putAtt(foieGrasGrpID,foieGrasS,'Units','m/s');
-    foieGrasSse=netcdf.defVar(foieGrasGrpID,'S_SE',"NC_DOUBLE",TrackfoieGrasdimid);
-    netcdf.putAtt(foieGrasGrpID,foieGrasSse,"Description","foieGras estimated standard deviation in directionless velocity");
-    netcdf.putAtt(foieGrasGrpID,foieGrasSse,'Units','m/s');
+    AniMotumLat=netcdf.defVar(AniMotumGrpID,'LAT',"NC_DOUBLE",TrackAniMotumdimid);
+    netcdf.putAtt(AniMotumGrpID,AniMotumLat,"Description","AniMotum track latitudes")
+    netcdf.putAtt(AniMotumGrpID,AniMotumLat,'Units','decimal degrees');
+    AniMotumLon=netcdf.defVar(AniMotumGrpID,'LON',"NC_DOUBLE",TrackAniMotumdimid);
+    netcdf.putAtt(AniMotumGrpID,AniMotumLon,"Description","AniMotum track longitudes")
+    netcdf.putAtt(AniMotumGrpID,AniMotumLon,'Units','decimal degrees');
+    AniMotumDate=netcdf.defVar(AniMotumGrpID,'DATE',"NC_STRING",TrackAniMotumdimid);
+    netcdf.putAtt(AniMotumGrpID,AniMotumDate,"Description","Date and time of AniMotum interpolated location estimate")
+    netcdf.putAtt(AniMotumGrpID,AniMotumDate,'Time Zone','UTC');
+    AniMotumX=netcdf.defVar(AniMotumGrpID,'X',"NC_DOUBLE",TrackAniMotumdimid);
+    netcdf.putAtt(AniMotumGrpID,AniMotumX,"Description","AniMotum interpolated location estimate longitude in km, World Mercator Projection");
+    netcdf.putAtt(AniMotumGrpID,AniMotumX,'Units','km');
+    AniMotumY=netcdf.defVar(AniMotumGrpID,'Y',"NC_DOUBLE",TrackAniMotumdimid);
+    netcdf.putAtt(AniMotumGrpID,AniMotumY,"Description","AniMotum interpolated location estimate latitude in km, World Mercator Projection");
+    netcdf.putAtt(AniMotumGrpID,AniMotumY,'Units','km');
+    AniMotumXse=netcdf.defVar(AniMotumGrpID,'X_SE',"NC_DOUBLE",TrackAniMotumdimid);
+    netcdf.putAtt(AniMotumGrpID,AniMotumXse,"Description","AniMotum interpolated location estimate standard error in longitude");
+    netcdf.putAtt(AniMotumGrpID,AniMotumXse,'Units','km');
+    AniMotumYse=netcdf.defVar(AniMotumGrpID,'Y_SE',"NC_DOUBLE",TrackAniMotumdimid);
+    netcdf.putAtt(AniMotumGrpID,AniMotumYse,"Description","AniMotum interpolated location estimate standard error in latitude");
+    netcdf.putAtt(AniMotumGrpID,AniMotumYse,'Units','km');
+    AniMotumU=netcdf.defVar(AniMotumGrpID,'U',"NC_DOUBLE",TrackAniMotumdimid);
+    netcdf.putAtt(AniMotumGrpID,AniMotumU,"Description","AniMotum estimated velocity in x direction");
+    netcdf.putAtt(AniMotumGrpID,AniMotumU,'Units','m/s');
+    AniMotumV=netcdf.defVar(AniMotumGrpID,'V',"NC_DOUBLE",TrackAniMotumdimid);
+    netcdf.putAtt(AniMotumGrpID,AniMotumV,"Description","AniMotum estimated velocity in y direction");
+    netcdf.putAtt(AniMotumGrpID,AniMotumV,'Units','m/s');
+    AniMotumUse=netcdf.defVar(AniMotumGrpID,'U_SE',"NC_DOUBLE",TrackAniMotumdimid);
+    netcdf.putAtt(AniMotumGrpID,AniMotumUse,"Description","AniMotum estimated standard error of velocity in x direction");
+    netcdf.putAtt(AniMotumGrpID,AniMotumUse,'Units','m/s');
+    AniMotumVse=netcdf.defVar(AniMotumGrpID,'V_SE',"NC_DOUBLE",TrackAniMotumdimid);
+    netcdf.putAtt(AniMotumGrpID,AniMotumVse,"Description","AniMotum estimated standard error of velocity in y direction");
+    netcdf.putAtt(AniMotumGrpID,AniMotumVse,'Units','m/s');
+    AniMotumS=netcdf.defVar(AniMotumGrpID,'S',"NC_DOUBLE",TrackAniMotumdimid);
+    netcdf.putAtt(AniMotumGrpID,AniMotumS,"Description"," AniMotum estimated directionless velocity");
+    netcdf.putAtt(AniMotumGrpID,AniMotumS,'Units','m/s');
+    AniMotumSse=netcdf.defVar(AniMotumGrpID,'S_SE',"NC_DOUBLE",TrackAniMotumdimid);
+    netcdf.putAtt(AniMotumGrpID,AniMotumSse,"Description","AniMotum estimated standard deviation in directionless velocity");
+    netcdf.putAtt(AniMotumGrpID,AniMotumSse,'Units','m/s');
     netcdf.endDef(ncid);
     if exist('data','var')==1
-        netcdf.putVar(foieGrasGrpID,foieGrasDate,string(data.date));
-        netcdf.putVar(foieGrasGrpID,foieGrasLat,data.lat);
-        netcdf.putVar(foieGrasGrpID,foieGrasLon,data.lon);
-        netcdf.putVar(foieGrasGrpID,foieGrasX,data.x);
-        netcdf.putVar(foieGrasGrpID,foieGrasY,data.y);
-        netcdf.putVar(foieGrasGrpID,foieGrasXse,data.x_se);
-        netcdf.putVar(foieGrasGrpID,foieGrasYse,data.y_se);
-        netcdf.putVar(foieGrasGrpID,foieGrasU,data.u);
-        netcdf.putVar(foieGrasGrpID,foieGrasV,data.v);
-        netcdf.putVar(foieGrasGrpID,foieGrasUse,data.u_se);
-        netcdf.putVar(foieGrasGrpID,foieGrasVse,data.v_se);
-        netcdf.putVar(foieGrasGrpID,foieGrasS,data.s);
-        netcdf.putVar(foieGrasGrpID,foieGrasSse,data.s_se);
+        netcdf.putVar(AniMotumGrpID,AniMotumDate,string(data.date));
+        netcdf.putVar(AniMotumGrpID,AniMotumLat,data.lat);
+        netcdf.putVar(AniMotumGrpID,AniMotumLon,data.lon);
+        netcdf.putVar(AniMotumGrpID,AniMotumX,data.x);
+        netcdf.putVar(AniMotumGrpID,AniMotumY,data.y);
+        netcdf.putVar(AniMotumGrpID,AniMotumXse,data.x_se);
+        netcdf.putVar(AniMotumGrpID,AniMotumYse,data.y_se);
+        netcdf.putVar(AniMotumGrpID,AniMotumU,data.u);
+        netcdf.putVar(AniMotumGrpID,AniMotumV,data.v);
+        netcdf.putVar(AniMotumGrpID,AniMotumUse,data.u_se);
+        netcdf.putVar(AniMotumGrpID,AniMotumVse,data.v_se);
+        netcdf.putVar(AniMotumGrpID,AniMotumS,data.s);
+        netcdf.putVar(AniMotumGrpID,AniMotumSse,data.s_se);
     else
     end
     clear data
