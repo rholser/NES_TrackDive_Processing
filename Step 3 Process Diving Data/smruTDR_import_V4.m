@@ -1,5 +1,5 @@
 
-%import_smru_tdr_V4(filename) will read in SMRU tdr archives ('_tdr.txt'),
+%smruTDR_import_V4(filename) will read in SMRU tdr archives ('_tdr.txt'),
 %removes text lines, and exports the data as _tdr_raw.csv. It then will
 %check the data for time gaps and jumps, correct any that are found, and
 %export the result as _tdr_clean.csv.
@@ -20,7 +20,7 @@
 % processing with IKNOS using DiveProcessing.m
 
 
-function import_smru_tdr_V4(filename)
+function smruTDR_import_V4(filename)
 %load data into table and name columns
 tdrdataraw=readtable(filename);
 tdrdataraw=tdrdataraw(:,1:3);

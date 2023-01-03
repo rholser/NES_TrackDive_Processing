@@ -39,8 +39,21 @@ clear
 SMRUfiles=dir('*tdr.txt');
 
 for k=15:length(SMRUfiles)
-    import_smru_tdr_V4(SMRUfiles(k).name)
+    smruTDR_import_V4(SMRUfiles(k).name)
 end
+
+clear
+Kamifiles=dir('*.txt');
+MetaData=readtable('KamiIndex.csv');
+for i=1:size(files,1)
+    %TOPPID from filename
+    TOPPID=str2num(strtok(filename,'_'));
+    StartTime=MetaData.StartTime(MetaData.TOPPID==TOPPID);
+    StartDate=MetaData.StartDate(MetaData.TOPPID==TOPPID);
+    StartJulDate=datenum(StartDate)+days(StartTime);
+    KamiTDR_Import_V1(Kamifiles(k).name,StartJulDate)
+end
+
 
 %% Step 2: Load, prep file, and DA
 clear
@@ -58,7 +71,7 @@ for k=1:length(file)
     Start=MetaDataAll.DepartDate(row);
     End=MetaDataAll.ArriveDate(row);
     
-    change_format_DA_V4_2(file(k).name,Start,End,TOPPID);
+    ChangeFormat_DA_V4_2(file(k).name,Start,End,TOPPID);
 end
 
 %% Step 3: Subsample to 8 seconds and DA

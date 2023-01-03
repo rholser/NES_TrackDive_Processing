@@ -1,17 +1,17 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%Created by: Rachel Holser (rholser@ucsc.edu)
-%Created on: 22-Aug-2022
-%Update Log: 
+% Created by: Rachel Holser (rholser@ucsc.edu)
+% Created on: 22-Aug-2022
+% Update Log: 
 % 16-Dec-2022 - added geolocation for TDR2 and TDR3 files.
-% 22-Dec-2022 - corrected source file formats to include location on disk
+% 02-Jan-2022 - corrected source file formats to include location on disk
 %
-%Required functions:  yt_interpol_linear_2 (IKNOS toolbox)
-%                     SolarAzEl
-%                     (https://github.com/Chrismarsh/umbra/blob/master/matlab/SolarAzEl.m)
+% Required functions:  yt_interpol_linear_2 (IKNOS toolbox)
+%                      SolarAzEl
+%                      (https://github.com/Chrismarsh/umbra/blob/master/matlab/SolarAzEl.m)
 %
-%Preparation:
+% Preparation:
 %      Use CompileMetdata.m to create MetaData.mat
-%      Create All_Filenames.mat using CompileFilenames.m
+%      Create All_Filenames.mat using CompileFilenames.m6
 %      Process all tracking and diving data
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -20,29 +20,31 @@ load MetaData.mat
 load All_Filenames.mat
 
 %find indices of first and last deployments to be processed
-files=dir('*_DiveStat.csv');
-first=find(MetaDataAll.TOPPID==str2double(strtok(files(1).name,'_')));
-last=find(MetaDataAll.TOPPID==str2double(strtok(files(end).name,'_')));
+%files=dir('*_DiveStat.csv');
+%first=find(MetaDataAll.TOPPID==str2double(strtok(files(1).name,'_')));
+%last=find(MetaDataAll.TOPPID==str2double(strtok(files(end).name,'_')));
+first=1;
+last=665;
 clear files
 for i=first:last
 
     disp([MetaDataAll.FieldID{i} '_' num2str(MetaDataAll.TOPPID(i))])
 
-    %find filenames with the current TOPPID
-    trackfile=strcat(TrackFoieGrasFiles.folder(TrackFoieGrasFiles.TOPPID==MetaDataAll.TOPPID(i)),...
-        '\',TrackFoieGrasFiles.filename(TrackFoieGrasFiles.TOPPID==MetaDataAll.TOPPID(i)));
+    % Find filenames with the current TOPPID
+    trackfile=strcat(TrackAniMotumFiles.folder(TrackAniMotumFiles.TOPPID==MetaDataAll.TOPPID(i)),...
+        '\',TrackAniMotumFiles.filename(TrackAniMotumFiles.TOPPID==MetaDataAll.TOPPID(i)));
     tdr1file=strcat(TDRDiveStatFiles.folder(TDRDiveStatFiles.TOPPID==MetaDataAll.TOPPID(i)),...
-        '\',TDRDiveStatFiles.filename(TDRDiveStatFiles.TOPPID==MetaDataAll.TOPPID(i)));
+        '\',strtok(TDRDiveStatFiles.filename(TDRDiveStatFiles.TOPPID==MetaDataAll.TOPPID(i)),'.'),'_QC.csv');
     tdr1subfile=strcat(TDRSubDiveStatFiles.folder(TDRSubDiveStatFiles.TOPPID==MetaDataAll.TOPPID(i)),...
-        '\',TDRSubDiveStatFiles.filename(TDRSubDiveStatFiles.TOPPID==MetaDataAll.TOPPID(i)));
-    tdr2file=strcat(TDR2DiveStatFiles.filename(TDR2DiveStatFiles.TOPPID==MetaDataAll.TOPPID(i)),...
-        '\',TDR2DiveStatFiles.filename(TDR2DiveStatFiles.TOPPID==MetaDataAll.TOPPID(i)));
-    tdr2subfile=strcat(TDR2SubDiveStatFiles.filename(TDR2SubDiveStatFiles.TOPPID==MetaDataAll.TOPPID(i)),...
-        '\',TDR2SubDiveStatFiles.filename(TDR2SubDiveStatFiles.TOPPID==MetaDataAll.TOPPID(i)));
-    tdr3file=strcat(TDR3DiveStatFiles.filename(TDR3DiveStatFiles.TOPPID==MetaDataAll.TOPPID(i)),...
-        '\',TDR3DiveStatFiles.filename(TDR3DiveStatFiles.TOPPID==MetaDataAll.TOPPID(i)));
-    tdr3subfile=strcat(TDR3SubDiveStatFiles.filename(TDR3SubDiveStatFiles.TOPPID==MetaDataAll.TOPPID(i)),...
-        '\',TDR3SubDiveStatFiles.filename(TDR3SubDiveStatFiles.TOPPID==MetaDataAll.TOPPID(i)));
+        '\',strtok(TDRSubDiveStatFiles.filename(TDRSubDiveStatFiles.TOPPID==MetaDataAll.TOPPID(i)),'.'),'_QC.csv');
+    tdr2file=strcat(TDR2DiveStatFiles.folder(TDR2DiveStatFiles.TOPPID==MetaDataAll.TOPPID(i)),...
+        '\',strtok(TDR2DiveStatFiles.filename(TDR2DiveStatFiles.TOPPID==MetaDataAll.TOPPID(i)),'.'),'_QC.csv');
+    tdr2subfile=strcat(TDR2SubDiveStatFiles.folder(TDR2SubDiveStatFiles.TOPPID==MetaDataAll.TOPPID(i)),...
+        '\',strtok(TDR2SubDiveStatFiles.filename(TDR2SubDiveStatFiles.TOPPID==MetaDataAll.TOPPID(i)),'.'),'_QC.csv');
+    tdr3file=strcat(TDR3DiveStatFiles.folder(TDR3DiveStatFiles.TOPPID==MetaDataAll.TOPPID(i)),...
+        '\',strtok(TDR3DiveStatFiles.filename(TDR3DiveStatFiles.TOPPID==MetaDataAll.TOPPID(i)),'.'),'_QC.csv');
+    tdr3subfile=strcat(TDR3SubDiveStatFiles.folder(TDR3SubDiveStatFiles.TOPPID==MetaDataAll.TOPPID(i)),...
+        '\',strtok(TDR3SubDiveStatFiles.filename(TDR3SubDiveStatFiles.TOPPID==MetaDataAll.TOPPID(i)),'.'),'_QC.csv');
 
     if ~isempty(trackfile)
 
@@ -254,7 +256,7 @@ for i=first:last
             Dive1Stat.Lat(:)=NaN;
             Dive1Stat.Lon(:)=NaN;
             Dive1Stat.SolarEl(:)=NaN;
-            writematrix(Dive1Stat,tdr1file);
+            writetable(Dive1Stat,tdr1file);
         end
 
         if ~isempty(tdr1subfile)
@@ -262,7 +264,7 @@ for i=first:last
             Dive1SubStat.Lat(:)=NaN;
             Dive1SubStat.Lon(:)=NaN;
             Dive1SubStat.SolarEl(:)=NaN;
-            writematrix(Dive1SubStat,tdr1subfile);
+            writetable(Dive1SubStat,tdr1subfile);
         end
 
         if ~isempty(tdr2file)
@@ -270,7 +272,7 @@ for i=first:last
             Dive2Stat.Lat(:)=NaN;
             Dive2Stat.Lon(:)=NaN;
             Dive2Stat.SolarEl(:)=NaN;
-            writematrix(Dive2Stat,tdr2file);
+            writetable(Dive2Stat,tdr2file);
         end
 
         if ~isempty(tdr2subfile)
@@ -278,7 +280,7 @@ for i=first:last
             Dive2SubStat.Lat(:)=NaN;
             Dive2SubStat.Lon(:)=NaN;
             Dive2SubStat.SolarEl(:)=NaN;
-            writematrix(Dive2SubStat,tdr2subfile);
+            writetable(Dive2SubStat,tdr2subfile);
         end
 
         if ~isempty(tdr3file)
@@ -286,7 +288,7 @@ for i=first:last
             Dive3Stat.Lat(:)=NaN;
             Dive3Stat.Lon(:)=NaN;
             Dive3Stat.SolarEl(:)=NaN;
-            writematrix(Dive3Stat,tdr3file);
+            writetable(Dive3Stat,tdr3file);
         end
 
         if ~isempty(tdr3subfile)
@@ -294,7 +296,7 @@ for i=first:last
             Dive3SubStat.Lat(:)=NaN;
             Dive3SubStat.Lon(:)=NaN;
             Dive3SubStat.SolarEl(:)=NaN;
-            writematrix(Dive3SubStat,tdr3subfile);
+            writetable(Dive3SubStat,tdr3subfile);
 
         end
     end

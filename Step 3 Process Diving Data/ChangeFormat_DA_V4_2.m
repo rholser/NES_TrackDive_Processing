@@ -1,4 +1,4 @@
-%output=change_format_DA_V4_2(filename,Start,End,TOPPID)
+%output=ChangeFormat_DA_V4_2(filename,Start,End,TOPPID)
 %
 %Function to prepare csv file, fix errors, and run dive analysis on TDR data. Truncates data to startstop 
 % for non-Little Leonardo data
@@ -33,8 +33,9 @@
 % 28-Dec-2022 - Added date conversion to Step 2.2 and Step 3
 %               Added NaT and duplicate time filter to Step 6
 %               Added TOPPID exceptions to Step 8.1
+% 02-Jan-2023 - Changed name
 
-function change_format_DA_V4_2(filename,Start,End,TOPPID)
+function ChangeFormat_DA_V4_2(filename,Start,End,TOPPID)
 %% Step 1: load csv of TDR data
     data=readtable(filename,'HeaderLines',0,'ReadVariableNames',true);
     
