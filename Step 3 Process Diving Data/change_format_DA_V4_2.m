@@ -33,6 +33,9 @@
 % 28-Dec-2022 - Added date conversion to Step 2.2 and Step 3
 %               Added NaT and duplicate time filter to Step 6
 %               Added TOPPID exceptions to Step 8.1
+% 01-Jan-2022 - Added time adjustment for Kami seals 2011016, 2012005, 2012041,
+%               2013027 (ready to rerun DA)
+%
 
 function change_format_DA_V4_2(filename,Start,End,TOPPID)
 %% Step 1: load csv of TDR data
@@ -155,9 +158,15 @@ function change_format_DA_V4_2(filename,Start,End,TOPPID)
         data.Time=data.Time+calyears(4);
     end
     
-    %Step 3.3: save UTC offset and compression factor to Kami records (applied in Step 4)
+    %Step 3.3: save UTC offset and compression factor to Kami records (applied in Step 4);
+    % manually included TOPPIDs for seals that also have a Mk9 or Mk10 tag and a
+    % Kami tag QC of 1,2,or 3 OTHERWISE a comment is included after TOPPID
     if size(strfind(filename,'Kami'),1)>0
-        if TOPPID==2011017
+        if TOPPID==2011016 % some messy track points 
+            offset = hours(7)+minutes(55)+seconds(36); 
+            compress = minutes(2)+seconds(28); 
+            Cut=0; 
+        elseif TOPPID==2011017
             offset = hours(7)+minutes(58)+seconds(57);
             compress = minutes(2)+seconds(10);
             Cut=datetime(2011,4,7,4,25,55)+offset;
@@ -173,10 +182,17 @@ function change_format_DA_V4_2(filename,Start,End,TOPPID)
             offset = hours(7)+minutes(59)+seconds(11);
             compress = minutes(4)+seconds(26);
             Cut=0;
+        elseif TOPPID==2011033 % bad Mk9 record
+        elseif TOPPID==2011043 % bad track - dateline issue
+        elseif TOPPID==2012005 % seal went to OR 
+            offset = hours(7)+minutes(54)+seconds(44); 
+            compress = minutes(3)+seconds(5); 
+            Cut=0; 
         elseif TOPPID==2012006
             offset = hours(8)+minutes(0)+seconds(34);
             compress = minutes(3)+seconds(21);
             Cut=0;
+        elseif TOPPID==2012010 % bad extrapolation of track
         elseif TOPPID==2012012
             offset = hours(7)+minutes(50)+seconds(22);
             compress = minutes(1)+seconds(45);
@@ -193,6 +209,10 @@ function change_format_DA_V4_2(filename,Start,End,TOPPID)
             offset = hours(5)+minutes(41)+seconds(0);
             compress = minutes(5)+seconds(57);
             Cut=datetime(2012,9,20,12,11,15)+offset;
+        elseif TOPPID==2012041 % few-ish locations for track
+            offset = hours(5)+minutes(41)+seconds(40); 
+            compress = -(minutes(50)+seconds(0));
+            Cut=datetime(2012,11,7,15,28,15); 
         elseif TOPPID==2013005
             offset = hours(8)+minutes(0)+seconds(38);
             compress = minutes(1)+seconds(48);
@@ -209,6 +229,7 @@ function change_format_DA_V4_2(filename,Start,End,TOPPID)
             offset = hours(8)+minutes(1)+seconds(3);
             compress = minutes(2)+seconds(46);
             Cut=0;
+        elseif TOPPID==2013010 % incomplete track
         elseif TOPPID==2013011
             offset = hours(8)+minutes(0)+seconds(14);
             compress = minutes(2)+seconds(45);
@@ -221,6 +242,11 @@ function change_format_DA_V4_2(filename,Start,End,TOPPID)
             offset = hours(8)+minutes(0)+seconds(16);
             compress = minutes(3)+seconds(21);
             Cut=0;
+        elseif TOPPID==2013018 % bad extrapolation of track
+        elseif TOPPID==2013027 % lots of benthic diving 
+            offset = hours(5)+minutes(41)+seconds(44); 
+            compress = seconds(44); 
+            Cut=datetime(2013,11,24,23,23,19); 
         elseif TOPPID==2013029
             offset = hours(5)+minutes(41)+seconds(43);
             compress = minutes(6)+seconds(0);
@@ -241,7 +267,13 @@ function change_format_DA_V4_2(filename,Start,End,TOPPID)
             offset = hours(6)+minutes(59)+seconds(20);
             compress = minutes(10)+seconds(30);
             Cut=datetime(2013,12,30,10,5,0)+offset;
-        elseif TOPPID==2014011
+        elseif TOPPID==2013034 % bad Mk10 record (missing tops of dives -- check if new code fixed this issue)
+        elseif TOPPID==2013041 % check if Mk9 record fixed (middle of record missing in processed but not raw data)
+        elseif TOPPID==2013043 % start of Mk10 record missing
+        elseif TOPPID==2013045 % check if Mk9 record fixed (middle of record missing in processed but not raw data)
+        elseif TOPPID==2013047 % only middle chunk of Mk9 record present
+        elseif TOPPID==2014010 % Mk9 record missing chunk
+        elseif TOPPID==2014011 
             offset = hours(7)+minutes(41)+seconds(2);
             compress = minutes(2)+seconds(32);
             Cut=0;
@@ -257,14 +289,20 @@ function change_format_DA_V4_2(filename,Start,End,TOPPID)
             offset = hours(8)+minutes(0)+seconds(20);
             compress = minutes(4)+seconds(15);
             Cut=0;
+        elseif TOPPID==2014019 % Mk10 record ends early
+        elseif TOPPID==2014020 % Mk10 record ends early
         elseif TOPPID==2015001
             offset = hours(8)+minutes(0)+seconds(25);
             compress = seconds(22);
             Cut=0;
+        elseif TOPPID==2015002 % Mk10 has issue
         elseif TOPPID==2015003
             offset = hours(7)+minutes(45)+seconds(47);
             compress = minutes(3)+seconds(29);
             Cut=0;
+        elseif TOPPID==2015004 % Mk9 failed mid-trip
+        elseif TOPPID==2015005 % Mk9 failed, two tracks
+        elseif TOPPID==2015006 % Mk9 record has missing data, check track
         elseif TOPPID==2015009
             offset = hours(8)+minutes(0)+seconds(31);
             compress = minutes(4)+seconds(15);
@@ -273,19 +311,21 @@ function change_format_DA_V4_2(filename,Start,End,TOPPID)
             offset = hours(8)+minutes(0)+seconds(28);
             compress = minutes(4)+seconds(1);
             Cut=0;
+        elseif TOPPID==2015017 % Mk9 failed mid-trip
         elseif TOPPID==2016004
             offset = hours(8)+minutes(2)+seconds(10);
             compress = minutes(2)+seconds(57);
             Cut=0;
-        elseif TOPPID==2016011
+        elseif TOPPID==2016011 % TDRQC=5?
             offset = hours(8)+minutes(0)+seconds(50);
             compress = minutes(2)+seconds(25);
             Cut=0;
-        elseif TOPPID==2017002
+        elseif TOPPID==2016013 % no raw data for Mk9
+        elseif TOPPID==2017002 % TDRQC=5?
             offset = hours(8)+minutes(0)+seconds(27);
             compress = minutes(3)+seconds(58);
             Cut=0;
-        elseif TOPPID==2017004
+        elseif TOPPID==2017004 % TDRQC=5?
             offset = hours(8)+minutes(0)+seconds(23);
             compress = minutes(3)+seconds(24);
             Cut=0;
