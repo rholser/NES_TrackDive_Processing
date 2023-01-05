@@ -35,7 +35,7 @@
 %               Added TOPPID exceptions to Step 8.1
 % 02-Jan-2023 - Changed name
 
-function ChangeFormat_DA_V4_2(filename,Start,End,TOPPID)
+function change_format_DA_V4_2(filename,Start,End,TOPPID)
 %% Step 1: load csv of TDR data
     data=readtable(filename,'HeaderLines',0,'ReadVariableNames',true);
     
