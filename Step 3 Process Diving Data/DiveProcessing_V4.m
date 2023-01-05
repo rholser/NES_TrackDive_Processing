@@ -71,7 +71,7 @@ for k=1:length(file)
     Start=MetaDataAll.DepartDate(row);
     End=MetaDataAll.ArriveDate(row);
     
-    change_format_DA_V4_2(file(k).name,Start,End,TOPPID);
+    ChangeFormat_DA_V4_2(file(k).name,Start,End,TOPPID);
 end
 
 %% Step 3: Subsample to 8 seconds and DA
