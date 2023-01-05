@@ -179,7 +179,13 @@ function ChangeFormat_DA_V4_2(filename,Start,End,TOPPID)
             compress = minutes(4)+seconds(26);
             Cut=0;
         elseif TOPPID==2011033 % bad Mk9 record
+            offset=0;
+            compress=0;
+            Cut=0;
         elseif TOPPID==2011043 % bad track - dateline issue
+            offset=0;
+            compress=0;
+            Cut=0;
         elseif TOPPID==2012005 % seal went to OR
             offset = hours(7)+minutes(54)+seconds(44);
             compress = minutes(3)+seconds(5);
@@ -189,6 +195,9 @@ function ChangeFormat_DA_V4_2(filename,Start,End,TOPPID)
             compress = minutes(3)+seconds(21);
             Cut=0;
         elseif TOPPID==2012010 % bad extrapolation of track
+            offset=0;
+            compress=0;
+            Cut=0;
         elseif TOPPID==2012012
             offset = hours(7)+minutes(50)+seconds(22);
             compress = minutes(1)+seconds(45);
@@ -226,6 +235,9 @@ function ChangeFormat_DA_V4_2(filename,Start,End,TOPPID)
             compress = minutes(2)+seconds(46);
             Cut=0;
         elseif TOPPID==2013010 % incomplete track
+            offset=0;
+            compress=0;
+            Cut=0;
         elseif TOPPID==2013011
             offset = hours(8)+minutes(0)+seconds(14);
             compress = minutes(2)+seconds(45);
@@ -239,7 +251,9 @@ function ChangeFormat_DA_V4_2(filename,Start,End,TOPPID)
             compress = minutes(3)+seconds(21);
             Cut=0;
         elseif TOPPID==2013018 % bad extrapolation of track
-
+            offset=0;
+            compress=0;
+            Cut=0;
         elseif TOPPID==2013027 % lots of benthic diving
             offset = hours(5)+minutes(41)+seconds(44);
             compress = seconds(44);
@@ -265,11 +279,29 @@ function ChangeFormat_DA_V4_2(filename,Start,End,TOPPID)
             compress = minutes(10)+seconds(30);
             Cut=datetime(2013,12,30,10,5,0)+offset;
         elseif TOPPID==2013034 % bad Mk10 record (missing tops of dives -- check if new code fixed this issue)
+            offset=0;
+            compress=0;
+            Cut=0;
         elseif TOPPID==2013041 % check if Mk9 record fixed (middle of record missing in processed but not raw data)
+            offset=0;
+            compress=0;
+            Cut=0;
         elseif TOPPID==2013043 % start of Mk10 record missing
+            offset=0;
+            compress=0;
+            Cut=0;
         elseif TOPPID==2013045 % check if Mk9 record fixed (middle of record missing in processed but not raw data)
+            offset=0;
+            compress=0;
+            Cut=0;
         elseif TOPPID==2013047 % only middle chunk of Mk9 record present
+            offset=0;
+            compress=0;
+            Cut=0;
         elseif TOPPID==2014010 % Mk9 record missing chunk
+            offset=0;
+            compress=0;
+            Cut=0;
         elseif TOPPID==2014011
             offset = hours(7)+minutes(41)+seconds(2);
             compress = minutes(2)+seconds(32);
@@ -287,19 +319,37 @@ function ChangeFormat_DA_V4_2(filename,Start,End,TOPPID)
             compress = minutes(4)+seconds(15);
             Cut=0;
         elseif TOPPID==2014019 % Mk10 record ends early
+            offset=0;
+            compress=0;
+            Cut=0;
         elseif TOPPID==2014020 % Mk10 record ends early
+            offset=0;
+            compress=0;
+            Cut=0;
         elseif TOPPID==2015001
             offset = hours(8)+minutes(0)+seconds(25);
             compress = seconds(22);
             Cut=0;
         elseif TOPPID==2015002 % Mk10 has issue
+            offset=0;
+            compress=0;
+            Cut=0;
         elseif TOPPID==2015003
             offset = hours(7)+minutes(45)+seconds(47);
             compress = minutes(3)+seconds(29);
             Cut=0;
         elseif TOPPID==2015004 % Mk9 failed mid-trip
+            offset=0;
+            compress=0;
+            Cut=0;
         elseif TOPPID==2015005 % Mk9 failed, two tracks
+            offset=0;
+            compress=0;
+            Cut=0;
         elseif TOPPID==2015006 % Mk9 record has missing data, check track
+            offset=0;
+            compress=0;
+            Cut=0;
         elseif TOPPID==2015009
             offset = hours(8)+minutes(0)+seconds(31);
             compress = minutes(4)+seconds(15);
@@ -313,16 +363,16 @@ function ChangeFormat_DA_V4_2(filename,Start,End,TOPPID)
             offset = hours(8)+minutes(2)+seconds(10);
             compress = minutes(2)+seconds(57);
             Cut=0;
-        elseif TOPPID==2016011 % TDRQC=5?
+        elseif TOPPID==2016011 
             offset = hours(8)+minutes(0)+seconds(50);
             compress = minutes(2)+seconds(25);
             Cut=0;
         elseif TOPPID==2016013 % no raw data for Mk9
-        elseif TOPPID==2017002 % TDRQC=5?
+        elseif TOPPID==2017002 
             offset = hours(8)+minutes(0)+seconds(27);
             compress = minutes(3)+seconds(58);
             Cut=0;
-        elseif TOPPID==2017004 % TDRQC=5?
+        elseif TOPPID==2017004 
             offset = hours(8)+minutes(0)+seconds(23);
             compress = minutes(3)+seconds(24);
             Cut=0;

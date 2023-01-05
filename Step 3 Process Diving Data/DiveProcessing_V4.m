@@ -64,7 +64,7 @@ file=[file1; file2;file3];
 clear file1 file2 file3
 load('MetaData.mat');
 
-for k=1:length(file)
+for k=6:length(file)
     %Find start and end time for each deployment in MetaData using TOPPID
     TOPPID=str2double(strtok(file(k).name,'_'));
     row=find(MetaDataAll.TOPPID==TOPPID);
