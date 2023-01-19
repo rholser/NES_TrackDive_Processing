@@ -17,49 +17,56 @@
 % one for processed data). Both files will contain all of the same global
 % attributes so metadata are available in both files.
 %
-% Modified: 04-Dec-2022
-% V.2. - Changed variable naming to remove redundant identifiers
+% V.2.2
+% 04-Dec-2022 - Changed variable naming to remove redundant identifiers
+% 05-Jan-2023 - fixed putAtt and putVar command code
+%               Removed Raw and Curated parent groups - only one level of organization now
+% 06-Jan-2023 - Additions and adjustments to global attributes
 
 clear
 load('MetaData.mat');
-load('All_Filenames.mat');
+folder='D:\Dropbox\MATLAB\V1 NetCDF Files';
 
-filename='2014001_12933_tdr_raw.csv';
-data=readtable(filename);
-TOPPID=2014001;
-i=446;
+%filename='2014001_12933_tdr_raw.csv';
+%data=readtable(filename);
+%TOPPID=2014001;
+%i=446;
 %i=639;
 
-for i=1:size(TagMetaDataAll,1)
+%for i=1:size(TagMetaDataAll,1)
+tic
+for i=1:50
+
+    load('All_Filenames.mat');
     TOPPID=TagMetaDataAll.TOPPID(i)
-    
     j=find(MetaDataAll.TOPPID==TOPPID);
     oldFormat = netcdf.setDefaultFormat('NC_FORMAT_NETCDF4');
+    
     %% Create level 1&2 netCDF file, groups, and global attributes
-    filename=[num2str(TOPPID) '_TrackTDR_RawCurated.nc'];
+    filename=[folder '\' num2str(TOPPID) '_TrackTDR_RawCurated.nc'];
     ncid=netcdf.create(filename,'CLOBBER');
 
-    %Raw Data Group
-    RawGrpID=netcdf.defGrp(ncid,'RAW_DATA');
-    RawArgosGrpID=netcdf.defGrp(RawGrpID,'RAW_ARGOS');
-    RawGPSGrpID=netcdf.defGrp(RawGrpID,'RAW_GPS');
-    RawTDR1GrpID=netcdf.defGrp(RawGrpID,'RAW_TDR1');
-    RawTDR2GrpID=netcdf.defGrp(RawGrpID,'RAW_TDR2');
-    RawTDR3GrpID=netcdf.defGrp(RawGrpID,'RAW_TDR3');
+    %Raw Data Groups
+    %RawGrpID=netcdf.defGrp(ncid,'RAW_DATA');
+    RawArgosGrpID=netcdf.defGrp(ncid,'RAW_ARGOS');
+    RawGPSGrpID=netcdf.defGrp(ncid,'RAW_GPS');
+    RawTDR1GrpID=netcdf.defGrp(ncid,'RAW_TDR1');
+    RawTDR2GrpID=netcdf.defGrp(ncid,'RAW_TDR2');
+    RawTDR3GrpID=netcdf.defGrp(ncid,'RAW_TDR3');
 
-    %Curated Data Group
-    CuratedGrpID=netcdf.defGrp(ncid,'CURATED_DATA');
-    CuratedTrackGrpID=netcdf.defGrp(CuratedGrpID,'CURATED_LOCATIONS');
-    CleanTDR1GrpID=netcdf.defGrp(CuratedGrpID,'CLEAN_TDR1');
-    ZOCTDR1GrpID=netcdf.defGrp(CuratedGrpID,'ZOC_TDR1');
-    CleanTDR2GrpID=netcdf.defGrp(CuratedGrpID,'CLEAN_TDR2');
-    ZOCTDR2GrpID=netcdf.defGrp(CuratedGrpID,'ZOC_TDR2');
-    CleanTDR3GrpID=netcdf.defGrp(CuratedGrpID,'CLEAN_TDR3');
-    ZOCTDR3GrpID=netcdf.defGrp(CuratedGrpID,'ZOC_TDR3');
+    %Curated Data Groups
+    %CuratedGrpID=netcdf.defGrp(ncid,'CURATED_DATA');
+    CuratedTrackGrpID=netcdf.defGrp(ncid,'CURATED_LOCATIONS');
+    CleanTDR1GrpID=netcdf.defGrp(ncid,'CLEAN_TDR1');
+    ZOCTDR1GrpID=netcdf.defGrp(ncid,'ZOC_TDR1');
+    CleanTDR2GrpID=netcdf.defGrp(ncid,'CLEAN_TDR2');
+    ZOCTDR2GrpID=netcdf.defGrp(ncid,'ZOC_TDR2');
+    CleanTDR3GrpID=netcdf.defGrp(ncid,'CLEAN_TDR3');
+    ZOCTDR3GrpID=netcdf.defGrp(ncid,'ZOC_TDR3');
 
     %Global Attributes
     %%%%%Creation/versions/permissions
-    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"), "_____DATA_PROCESSING_AND_ATTRIBUTION_____",'________');
+    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"), "_____DATA_PROCESSING_AND_ATTRIBUTION____________________",'____DATA_PROCESSING_AND_ATTRIBUTION________________');
     netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"), 'creation_date',string(datetime("now")));
     netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "MATLAB Version", version);
     netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "R Version", '');
@@ -75,22 +82,27 @@ for i=1:size(TagMetaDataAll,1)
     netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "Timezone", 'UTC');
 
     %%%%%Animal MetaData    
-    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "____ANIMAL_METADATA____",'________');
-    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "SealID", MetaDataAll.FieldID(j));
+    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "____ANIMAL_METADATA____________________",'____ANIMAL_METADATA________________');
+    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "SealID", string(MetaDataAll.FieldID(j)));
     netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "Species", 'Mirounga angustirostris');
-    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "Sex", MetaDataAll.Sex(j));
-    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "Age_Class", MetaDataAll.AgeClass(j));
-    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "Birth_Year", MetaDataAll.BrithYear(j));
+    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "Sex", string(MetaDataAll.Sex(j)));
+    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "Age_Class", string(MetaDataAll.AgeClass(j)));
+    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "Birth_Year", MetaDataAll.BirthYear(j));
     netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "Had_Pup", '');
     
     %%%%%Deployment MetaData
-    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "____DEPLOYMENT_METADATA____",'________');
+    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "____DEPLOYMENT_METADATA____________________",'____DEPLOYMENT_METADATA________________');
     netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "DeploymentID",TOPPID);
     netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "Deployment_Year", '');
     netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "Deployment_Season", string(MetaDataAll.Season(j)));
     netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "Instruments_Recovered", '');
-    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "Manipulation?", MetaDataAll.Manipulation(j));
-    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "Other_Deployments",'' ); %Need to build this in somehow
+    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "Manipulation?", string(MetaDataAll.Manipulation(j)));
+
+    %Create list of TOPP IDs for other deployments on same animal
+    rows=find(strcmp(MetaDataAll.FieldID(j),MetaDataAll.FieldID));
+    AllDeployments=strjoin(string(MetaDataAll.TOPPID(rows,1)));
+    clear rows
+    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "Other_Deployments", AllDeployments);
     netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "Departure_Location", string(MetaDataAll.DepartLoc(j)));
     netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "Departure_Lat", MetaDataAll.DepartLat(j));
     netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "Departure_Lon", MetaDataAll.DepartLon(j));
@@ -101,7 +113,7 @@ for i=1:size(TagMetaDataAll,1)
     netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "Arrival_Datetime", string(MetaDataAll.ArriveDate(j))); 
     
     %%%%%Data Quality
-    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "____DATA_QUALITY____",'________');
+    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "____DATA_QUALITY____________________",'____DATA_QUALITY________________');
     netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "Track_QC_Flag",TagMetaDataAll.SatTagQC(i));
     netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "TDR1_QC_Flag",TagMetaDataAll.TDR1QC(i));
     netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "TDR2_QC_Flag",TagMetaDataAll.TDR2QC(i));
@@ -114,26 +126,23 @@ for i=1:size(TagMetaDataAll,1)
     netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "TDR3_DepthResolution", '');
 
     %%%%%Instrument MetaData
-    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "____INSTRUMENT_METADATA____",'________');
+    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "____INSTRUMENT_METADATA____________________",'____INSTRUMENT_METADATA________________');
+    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "Location_Tag_Manufacturer", string(TagMetaDataAll.SatTagManufacturer(i)));
+    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "Location_Tag_Model", string(TagMetaDataAll.SatTagType(i)));
+    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "Location_Tag_ID", string(TagMetaDataAll.SatTagID(i)));
     netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "PTT", TagMetaDataAll.SatTagPTT(i));
-    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "Argos_Tag_Model", TagMetaDataAll.SatTagType(i));
-    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "Argos_Tag_ID", TagMetaDataAll.SatTagID(i));
-    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "Argos_Tag_Manufacturer", '');
-    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "GPS_Tag_Model", '');
-    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "GPS_Tag_ID", '');
-    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "GPS_Tag_Manufacturer", '');
-    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "TDR1_Tag_Model", TagMetaDataAll.TDR1Type(i));
-    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "TDR1_Tag_ID", TagMetaDataAll.TDR1ID(i));
-    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "TDR1_Tag_Manufacturer", '');
-    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "TDR1_Comments", TagMetaDataAll.TDR1Comment(i));
-    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "TDR2_Tag_Model", TagMetaDataAll.TDR2Type(i));
-    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "TDR2_Tag_ID", TagMetaDataAll.TDR2ID(i));
-    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "TDR2_Tag_Manufacturer", '');
-    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "TDR2_Comments", TagMetaDataAll.TDR2Comment(i));
-    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "TDR3_Tag_Model", TagMetaDataAll.TDR3Type(i));
-    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "TDR3_Tag_ID", TagMetaDataAll.TDR3ID(i));
-    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "TDR3_Tag_Manufacturer", '');
-    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "TDR3_Comments", TagMetaDataAll.TDR3Comment(i));
+    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "TDR1_Tag_Manufacturer", string(TagMetaDataAll.TDR1Manufacturer(i)));
+    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "TDR1_Tag_Model", string(TagMetaDataAll.TDR1Type(i)));
+    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "TDR1_Tag_ID", string(TagMetaDataAll.TDR1ID(i)));
+    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "TDR1_Comments", string(TagMetaDataAll.TDR1Comments(i)));
+    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "TDR2_Tag_Manufacturer", string(TagMetaDataAll.TDR1Manufacturer1(i)));
+    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "TDR2_Tag_Model", string(TagMetaDataAll.TDR2Type(i)));
+    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "TDR2_Tag_ID", string(TagMetaDataAll.TDR2ID(i)));
+    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "TDR2_Comments", string(TagMetaDataAll.TDR2Comments(i)));
+    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "TDR3_Tag_Manufacturer", string(TagMetaDataAll.TDR1Manufacturer2(i)));
+    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "TDR3_Tag_Model", string(TagMetaDataAll.TDR3Type(i)));
+    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "TDR3_Tag_ID", string(TagMetaDataAll.TDR3ID(i)));
+    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "TDR3_Comments", string(TagMetaDataAll.TDR3Comment(i)));
 
     %% Raw Data Group
     % Argos Raw - RawArgosGrpID
@@ -144,25 +153,25 @@ for i=1:size(TagMetaDataAll,1)
 
     netcdf.reDef(ncid);
     if exist('data','var')==1
-        RawArgosdimid=netcdf.defDim(RawArgosGrpID,'RawArgos_rows',size(data,1));
+        RawArgosdimid=netcdf.defDim(ncid,'RawArgos_rows',size(data,1));
     else
-        RawArgosdimid=netcdf.defDim(RawArgosGrpID,'RawArgos_rows',0);
+        RawArgosdimid=netcdf.defDim(ncid,'RawArgos_rows',0);
     end
     RawArgosDate=netcdf.defVar(RawArgosGrpID,'PASS_DATE','NC_STRING',RawArgosdimid);
-    netcdf.putAtt(ncid,RawArgosDate,"Description","Date of Argos-based location estimate");
+    netcdf.putAtt(RawArgosGrpID,RawArgosDate,"Description","Date of Argos-based location estimate");
     RawArgosTime=netcdf.defVar(RawArgosGrpID,'PASS_TIME','NC_STRING',RawArgosdimid);
-    netcdf.putAtt(ncid,RawArgosTime,"Description","Time of Argos-based location estimate");
+    netcdf.putAtt(RawArgosGrpID,RawArgosTime,"Description","Time of Argos-based location estimate");
     RawArgosClass=netcdf.defVar(RawArgosGrpID,'CLASS','NC_STRING',RawArgosdimid);
-    netcdf.putAtt(ncid,RawArgosClass,"Description","Location class of Argos-based location estimate");
+    netcdf.putAtt(RawArgosGrpID,RawArgosClass,"Description","Location class of Argos-based location estimate");
     RawArgosLat1=netcdf.defVar(RawArgosGrpID,'LAT1','NC_DOUBLE',RawArgosdimid);
-    netcdf.putAtt(ncid,RawArgosLat1,"Description","Latitude of Argos-based location estimate");
-    netcdf.putAtt(ncid,RawArgosLat1,'Units','decimal degrees');
+    netcdf.putAtt(RawArgosGrpID,RawArgosLat1,"Description","Latitude of Argos-based location estimate");
+    netcdf.putAtt(RawArgosGrpID,RawArgosLat1,'Units','decimal degrees');
     RawArgosLon1=netcdf.defVar(RawArgosGrpID,'LON1','NC_DOUBLE',RawArgosdimid);
-    netcdf.putAtt(ncid,RawArgosLon1,"Description","Longitude of Argos-based location estimate");
-    netcdf.putAtt(ncid,RawArgosLon1,'Units','decimal degrees');
+    netcdf.putAtt(RawArgosGrpID,RawArgosLon1,"Description","Longitude of Argos-based location estimate");
+    netcdf.putAtt(RawArgosGrpID,RawArgosLon1,'Units','decimal degrees');
     netcdf.endDef(ncid);
 
-    if ~isempty(data)
+    if exist('data','var')==1
         netcdf.putVar(RawArgosGrpID,RawArgosDate,data.PassDate)
         netcdf.putVar(RawArgosGrpID,RawArgosTime,data.PassTime)
         netcdf.putVar(RawArgosGrpID,RawArgosClass,data.Class)
@@ -180,25 +189,25 @@ for i=1:size(TagMetaDataAll,1)
 
     netcdf.reDef(ncid);
     if exist('data','var')==1
-        RawGPSdimid=netcdf.defDim(RawGrpID,'RawGPS_rows',size(data,1));
+        RawGPSdimid=netcdf.defDim(ncid,'RawGPS_rows',size(data,1));
     else
-        RawGPSdimid=netcdf.defDim(RawGrpID,'RawGPS_rows',0);
+        RawGPSdimid=netcdf.defDim(ncid,'RawGPS_rows',0);
     end
     RawGPSDate=netcdf.defVar(RawGPSGrpID,'DATE','NC_STRING',RawArgosdimid);
-    netcdf.putAtt(ncid,RawGPSDate,"Description","Date of GPS-based location estimate");
+    netcdf.putAtt(RawGPSGrpID,RawGPSDate,"Description","Date of GPS-based location estimate");
     RawGPSTime=netcdf.defVar(RawGPSGrpID,'TIME','NC_STRING',RawGPSdimid);
-    netcdf.putAtt(ncid,RawGPSTime,"Description","Time of GPS-based location estimate");
+    netcdf.putAtt(RawGPSGrpID,RawGPSTime,"Description","Time of GPS-based location estimate");
     RawGPSSats=netcdf.defVar(RawGPSGrpID,'NUM_SATELLITES','NC_DOUBLE',RawGPSdimid);
-    netcdf.putAtt(ncid,RawGPSSats,"Description","Number of GPS satellites detected for location estimate");
+    netcdf.putAtt(RawGPSGrpID,RawGPSSats,"Description","Number of GPS satellites detected for location estimate");
     RawGPSLat=netcdf.defVar(RawGPSGrpID,'LAT','NC_DOUBLE',RawGPSdimid);
-    netcdf.putAtt(ncid,RawGPSLat,"Description","Latitude of GPS-based location estimate");
-    netcdf.putAtt(ncid,RawGPSLat,'Units','decimal degrees');
+    netcdf.putAtt(RawGPSGrpID,RawGPSLat,"Description","Latitude of GPS-based location estimate");
+    netcdf.putAtt(RawGPSGrpID,RawGPSLat,'Units','decimal degrees');
     RawGPSLon=netcdf.defVar(RawGPSGrpID,'LON','NC_DOUBLE',RawGPSdimid);
-    netcdf.putAtt(ncid,RawGPSLon,"Description","Longitude of GPS-based location estimate");
-    netcdf.putAtt(ncid,RawGPSLon,'Units','decimal degrees');
+    netcdf.putAtt(RawGPSGrpID,RawGPSLon,"Description","Longitude of GPS-based location estimate");
+    netcdf.putAtt(RawGPSGrpID,RawGPSLon,'Units','decimal degrees');
     netcdf.endDef(ncid);
 
-    if ~isempty(data)
+    if exist('data','var')==1
         netcdf.putVar(RawGPSGrpID,RawGPSDate,string(data.Day))
         netcdf.putVar(RawGPSGrpID,RawGPSTime,string(data.Time))
         netcdf.putVar(RawGPSGrpID,RawGPSSats,data.Satellites)
@@ -212,13 +221,14 @@ for i=1:size(TagMetaDataAll,1)
     try
         data=readtable(strcat(TDRRawFiles.folder(TDRRawFiles.TOPPID==TOPPID),'\',...
             TDRRawFiles.filename(TDRRawFiles.TOPPID==TOPPID)));
+        data(isnan(data.Depth),:)=[];
     end
 
     netcdf.reDef(ncid);
     if exist('data','var')==1
-        RawTDR1dimid=netcdf.defDim(RawGrpID,'RawTDR1_rows',size(data,1));
+        RawTDR1dimid=netcdf.defDim(ncid,'RawTDR1_rows',size(data,1));
     else
-        RawTDR1dimid=netcdf.defDim(RawGrpID,'RawTDR1_rows',0);
+        RawTDR1dimid=netcdf.defDim(ncid,'RawTDR1_rows',0);
     end
     RawTDR1Date=netcdf.defVar(RawTDR1GrpID,'DATE','NC_STRING',RawTDR1dimid);
     RawTDR1Depth=netcdf.defVar(RawTDR1GrpID,'DEPTH','NC_DOUBLE',RawTDR1dimid);
@@ -226,7 +236,7 @@ for i=1:size(TagMetaDataAll,1)
     RawTDR1Light=netcdf.defVar(RawTDR1GrpID,'LIGHT','NC_DOUBLE',RawTDR1dimid);
     netcdf.endDef(ncid);
 
-    if ~isempty(data)
+    if exist('data','var')==1
         %Set up different imports to account for different instrument types/formats
         %Wildlife Computers - may include light and temp
         if contains(TDRRawFiles.filename(TDRRawFiles.TOPPID==TOPPID),'out-Archive')==1
@@ -240,6 +250,8 @@ for i=1:size(TagMetaDataAll,1)
             %data to include
             if sum(strcmp({'ExternalTemp'},data_names(:)))>0
                 netcdf.putVar(RawTDR1GrpID,RawTDR1Temp,data.ExternalTemp);
+                netcdf.putAtt(RawTDR1GrpID,RawTDR1Temp,'Units','Degrees C');
+
             elseif sum(strcmp({'Temp'},data_names(:)))>0
                 netcdf.putVar(RawTDR1GrpID,RawTDR1Temp,data.Temp);
             elseif sum(strcmp({'ExternalTemperature'},data_names(:)))>0
@@ -264,7 +276,6 @@ for i=1:size(TagMetaDataAll,1)
             netcdf.putVar(RawTDR1GrpID,RawTDR1Date,data.Time);
             netcdf.putVar(RawTDR1GrpID,RawTDR1Depth,data.Depth);
         end
-        netcdf.putAtt(RawTDR1GrpID,RawTDR1Temp,'Units','Degrees C');
     else
     end
     clear data data_names
@@ -273,20 +284,21 @@ for i=1:size(TagMetaDataAll,1)
     try
         data=readtable(strcat(TDR2RawFiles.folder(TDR2RawFiles.TOPPID==TOPPID),'\',...
             TDR2RawFiles.filename(TDR2RawFiles.TOPPID==TOPPID)));
+            data(isnan(data.Depth),:)=[];
     end
 
     netcdf.reDef(ncid);
     if exist('data','var')==1
-        RawTDR2dimid=netcdf.defDim(RawGrpID,'RawTDR2_rows',size(data,1));
+        RawTDR2dimid=netcdf.defDim(ncid,'RawTDR2_rows',size(data,1));
     else
-        RawTDR2dimid=netcdf.defDim(RawGrpID,'RawTDR2_rows',0);
+        RawTDR2dimid=netcdf.defDim(ncid,'RawTDR2_rows',0);
     end
     RawTDR2Date=netcdf.defVar(RawTDR2GrpID,'DATE','NC_STRING',RawTDR2dimid);
     RawTDR2Depth=netcdf.defVar(RawTDR2GrpID,'DEPTH','NC_DOUBLE',RawTDR2dimid);
     RawTDR2Temp=netcdf.defVar(RawTDR2GrpID,'EXTERNAL_TEMP','NC_DOUBLE',RawTDR2dimid);
     RawTDR2Light=netcdf.defVar(RawTDR2GrpID,'LIGHT','NC_DOUBLE',RawTDR2dimid);
     netcdf.endDef(ncid);
-    if ~isempty(data)
+    if exist('data','var')==1
 
         %Set up different imports to account for different instrument types/formats
         %Wildlife Computers - may include light and temp
@@ -335,12 +347,13 @@ for i=1:size(TagMetaDataAll,1)
     try
         data=readtable(strcat(TDR3RawFiles.folder(TDR3RawFiles.TOPPID==TOPPID),'\',...
             TDR3RawFiles.filename(TDR3RawFiles.TOPPID==TOPPID)));
+            data(isnan(data.Depth),:)=[];
     end
     netcdf.reDef(ncid);
     if exist('data','var')==1
-        RawTDR3dimid=netcdf.defDim(RawGrpID,'RawTDR3_rows',size(data,1));
+        RawTDR3dimid=netcdf.defDim(ncid,'RawTDR3_rows',size(data,1));
     else
-        RawTDR3dimid=netcdf.defDim(RawGrpID,'RawTDR3_rows',0);
+        RawTDR3dimid=netcdf.defDim(ncid,'RawTDR3_rows',0);
     end
     RawTDR3Date=netcdf.defVar(RawTDR3GrpID,'DATE','NC_STRING',RawTDR3dimid);
     RawTDR3Depth=netcdf.defVar(RawTDR3GrpID,'DEPTH','NC_DOUBLE',RawTDR3dimid);
@@ -348,7 +361,7 @@ for i=1:size(TagMetaDataAll,1)
     RawTDR3Light=netcdf.defVar(RawTDR3GrpID,'LIGHT','NC_DOUBLE',RawTDR3dimid);
     netcdf.endDef(ncid);
 
-    if ~isempty(data)
+    if exist('data','var')==1
         %Set up different imports to account for different instrument types/formats
         %Wildlife Computers - may include light and temp
         if contains(TDR3RawFiles.filename(TDR3RawFiles.TOPPID==TOPPID),'out-Archive')==1
@@ -401,32 +414,32 @@ for i=1:size(TagMetaDataAll,1)
 
     netcdf.reDef(ncid);
     if exist('data','var')==1
-        CleanTrackdimid=netcdf.defDim(CuratedGrpID,'CleanTrack_rows',size(data,1));
+        CleanTrackdimid=netcdf.defDim(ncid,'CuratedLocations_rows',size(data,1));
     else
-        CleanTrackdimid=netcdf.defDim(CuratedGrpID,'CleanTrack_rows',0);
+        CleanTrackdimid=netcdf.defDim(ncid,'CuratedLocations_rows',0);
     end
     CleanTrackDate=netcdf.defVar(CuratedTrackGrpID,'DATE','NC_STRING',CleanTrackdimid);
-    netcdf.putAtt(ncid,CleanTrackDate,"Description","Date and time of Argos-based location estimate");
+    netcdf.putAtt(CuratedTrackGrpID,CleanTrackDate,"Description","Date and time of Argos-based location estimate");
     CleanTrackLat=netcdf.defVar(CuratedTrackGrpID,'LAT','NC_DOUBLE',CleanTrackdimid);
-    netcdf.putAtt(ncid,CleanTrackLat,"Description","Latitude of Argos-based location estimate");
-    netcdf.putAtt(ncid,CleanTrackLat,'Units','decimal degrees');
+    netcdf.putAtt(CuratedTrackGrpID,CleanTrackLat,"Description","Latitude of Argos-based location estimate");
+    netcdf.putAtt(CuratedTrackGrpID,CleanTrackLat,'Units','decimal degrees');
     CleanTrackLon=netcdf.defVar(CuratedTrackGrpID,'LON','NC_DOUBLE',CleanTrackdimid);
-    netcdf.putAtt(ncid,CleanTrackLat,"Description","Longitude of Argos-based location estimate");
-    netcdf.putAtt(ncid,CleanTrackLon,'Units','decimal degrees');
+    netcdf.putAtt(CuratedTrackGrpID,CleanTrackLat,"Description","Longitude of Argos-based location estimate");
+    netcdf.putAtt(CuratedTrackGrpID,CleanTrackLon,'Units','decimal degrees');
     CleanTrackLocClass=netcdf.defVar(CuratedTrackGrpID,'LOC_CLASS','NC_STRING',CleanTrackdimid);
-    netcdf.putAtt(ncid,CleanTrackLocClass,"Description","Location class of Argos-based location estimate");
+    netcdf.putAtt(CuratedTrackGrpID,CleanTrackLocClass,"Description","Location class of Argos-based location estimate");
     CleanTrackSMajA=netcdf.defVar(CuratedTrackGrpID,'SEMI_MAJ_AXIS','NC_DOUBLE',CleanTrackdimid);
-    netcdf.putAtt(ncid,CleanTrackSMajA,"Description","Semi-major axis of Argos-based location estimate’s error ellipse");
+    netcdf.putAtt(CuratedTrackGrpID,CleanTrackSMajA,"Description","Semi-major axis of Argos-based location estimate’s error ellipse");
     CleanTrackSMinA=netcdf.defVar(CuratedTrackGrpID,'SEMI_MIN_AXIS','NC_DOUBLE',CleanTrackdimid);
-    netcdf.putAtt(ncid,CleanTrackSMinA,"Description","Semi-minor axis of Argos-based location estimate’s error ellipse");
+    netcdf.putAtt(CuratedTrackGrpID,CleanTrackSMinA,"Description","Semi-minor axis of Argos-based location estimate’s error ellipse");
     CleanTrackEllipseOr=netcdf.defVar(CuratedTrackGrpID,'ELLIPSE_ORIENTATION','NC_DOUBLE',CleanTrackdimid);
-    netcdf.putAtt(ncid,CleanTrackEllipseOr,"Description","Semi-major axis orientation from north");
+    netcdf.putAtt(CuratedTrackGrpID,CleanTrackEllipseOr,"Description","Semi-major axis orientation from north");
     %%%%can we have group attributes?  Need to figure out where to put this
     %%%%information
-    %netcdf.putAtt(CuratedGrpID,CuratedTrackGrpID,"Description", "Locations, location classes, and" + ...
+    %netcdf.putAtt(ncid,CuratedTrackGrpID,"Description", "Locations, location classes, and" + ...
     %    " errors (if available) of Argos and GPS data combined and prepared for AniMotum processing.");
     netcdf.endDef(ncid);
-    if ~isempty(data)
+    if exist('data','var')==1
         netcdf.putVar(CuratedTrackGrpID,CleanTrackDate,string(data.Date));
         netcdf.putVar(CuratedTrackGrpID,CleanTrackLat,data.Latitude);
         netcdf.putVar(CuratedTrackGrpID,CleanTrackLon,data.Longitude);
@@ -461,7 +474,7 @@ for i=1:size(TagMetaDataAll,1)
     netcdf.endDef(ncid);
 
     %Write in Data
-    if ~isempty(data)
+    if exist('data','var')==1
         netcdf.putVar(CleanTDR1GrpID,CleanTDR1Year,data(:,1));
         netcdf.putVar(CleanTDR1GrpID,CleanTDR1Month,data(:,2));
         netcdf.putVar(CleanTDR1GrpID,CleanTDR1Day,data(:,3));
@@ -499,7 +512,7 @@ for i=1:size(TagMetaDataAll,1)
     netcdf.endDef(ZOCTDR1GrpID);
 
     %Write in data
-    if ~isempty(data)
+    if exist('data','var')==1
         netcdf.putVar(ZOCTDR1GrpID,ZOCTDR1Date,data(:,2));
         netcdf.putVar(ZOCTDR1GrpID,ZOCTDR1CorrDepth,data(:,1));
         netcdf.putVar(ZOCTDR1GrpID,ZOCTDR1Depth,data(:,3));
@@ -529,7 +542,7 @@ for i=1:size(TagMetaDataAll,1)
     netcdf.endDef(ncid);
 
     %Write in Data
-    if ~isempty(data)
+    if exist('data','var')==1
         netcdf.putVar(CleanTDR2GrpID,CleanTDR2Year,data(:,1));
         netcdf.putVar(CleanTDR2GrpID,CleanTDR2Month,data(:,2));
         netcdf.putVar(CleanTDR2GrpID,CleanTDR2Day,data(:,3));
@@ -566,7 +579,7 @@ for i=1:size(TagMetaDataAll,1)
     netcdf.endDef(ZOCTDR2GrpID);
 
     %Write in data
-    if ~isempty(data)
+    if exist('data','var')==1
         netcdf.putVar(ZOCTDR2GrpID,ZOCTDR2Date,data(:,2));
         netcdf.putVar(ZOCTDR2GrpID,ZOCTDR2CorrDepth,data(:,1));
         netcdf.putVar(ZOCTDR2GrpID,ZOCTDR2Depth,data(:,3));
@@ -574,76 +587,78 @@ for i=1:size(TagMetaDataAll,1)
     end
     clear data
 
-    %TDR2 Clean
+    %TDR3 Clean
     try
-        data=readmatrix(TDR2CleanFiles.folder(TDR2CleanFiles.TOPPID==TOPPID),'\',...
-            TDR2CleanFiles.filename(TDR2CleanFiles.TOPPID==TOPPID));
+        data=readmatrix(TDR3CleanFiles.folder(TDR3CleanFiles.TOPPID==TOPPID),'\',...
+            TDR3CleanFiles.filename(TDR3CleanFiles.TOPPID==TOPPID));
     end
     %Define length dimension and variables for TDR2 Clean
     netcdf.reDef(ncid);
     if exist('data','var')==1
-        CleanTDR2dimid=netcdf.defDim(ncid,'CleanTDR2_rows',size(data,1));
+        CleanTDR3dimid=netcdf.defDim(ncid,'CleanTDR3_rows',size(data,1));
     else
-        CleanTDR2dimid=netcdf.defDim(ncid,'CleanTDR2_rows',0);
+        CleanTDR3dimid=netcdf.defDim(ncid,'CleanTDR3_rows',0);
     end
-    CleanTDR2Year=netcdf.defVar(CleanTDR2GrpID,'YEAR','NC_DOUBLE',CleanTDR2dimid);
-    CleanTDR2Month=netcdf.defVar(CleanTDR2GrpID,'MONTH','NC_DOUBLE',CleanTDR2dimid);
-    CleanTDR2Day=netcdf.defVar(CleanTDR2GrpID,'DAY','NC_DOUBLE',CleanTDR2dimid);
-    CleanTDR2Hour=netcdf.defVar(CleanTDR2GrpID,'HOUR','NC_DOUBLE',CleanTDR2dimid);
-    CleanTDR2Min=netcdf.defVar(CleanTDR2GrpID,'MIN','NC_DOUBLE',CleanTDR2dimid);
-    CleanTDR2Sec=netcdf.defVar(CleanTDR2GrpID,'SEC','NC_DOUBLE',CleanTDR2dimid);
-    CleanTDR2Depth=netcdf.defVar(CleanTDR2GrpID,'DEPTH','NC_DOUBLE',CleanTDR2dimid);
+    CleanTDR3Year=netcdf.defVar(CleanTDR3GrpID,'YEAR','NC_DOUBLE',CleanTDR3dimid);
+    CleanTDR3Month=netcdf.defVar(CleanTDR3GrpID,'MONTH','NC_DOUBLE',CleanTDR3dimid);
+    CleanTDR3Day=netcdf.defVar(CleanTDR3GrpID,'DAY','NC_DOUBLE',CleanTDR3dimid);
+    CleanTDR3Hour=netcdf.defVar(CleanTDR3GrpID,'HOUR','NC_DOUBLE',CleanTDR3dimid);
+    CleanTDR3Min=netcdf.defVar(CleanTDR3GrpID,'MIN','NC_DOUBLE',CleanTDR3dimid);
+    CleanTDR3Sec=netcdf.defVar(CleanTDR3GrpID,'SEC','NC_DOUBLE',CleanTDR3dimid);
+    CleanTDR3Depth=netcdf.defVar(CleanTDR3GrpID,'DEPTH','NC_DOUBLE',CleanTDR3dimid);
     netcdf.endDef(ncid);
 
     %Write in Data
-    if ~isempty(data)
-        netcdf.putVar(CleanTDR2GrpID,CleanTDR2Year,data(:,1));
-        netcdf.putVar(CleanTDR2GrpID,CleanTDR2Month,data(:,2));
-        netcdf.putVar(CleanTDR2GrpID,CleanTDR2Day,data(:,3));
-        netcdf.putVar(CleanTDR2GrpID,CleanTDR2Hour,data(:,4));
-        netcdf.putVar(CleanTDR2GrpID,CleanTDR2Min,data(:,5));
-        netcdf.putVar(CleanTDR2GrpID,CleanTDR2Sec,data(:,6));
-        netcdf.putVar(CleanTDR2GrpID,CleanTDR2Depth,data(:,7));
+    if exist('data','var')==1
+        netcdf.putVar(CleanTDR3GrpID,CleanTDR3Year,data(:,1));
+        netcdf.putVar(CleanTDR3GrpID,CleanTDR3Month,data(:,2));
+        netcdf.putVar(CleanTDR3GrpID,CleanTDR3Day,data(:,3));
+        netcdf.putVar(CleanTDR3GrpID,CleanTDR3Hour,data(:,4));
+        netcdf.putVar(CleanTDR3GrpID,CleanTDR3Min,data(:,5));
+        netcdf.putVar(CleanTDR3GrpID,CleanTDR3Sec,data(:,6));
+        netcdf.putVar(CleanTDR3GrpID,CleanTDR3Depth,data(:,7));
     else
     end
     clear data
 
-    %TDR2 ZOC
+    %TDR3 ZOC
     try
-        data=readmatrix(TDR2ZOCFiles.folder(TDR2ZOCFiles.TOPPID==TOPPID),'\',...
-            TDR2ZOCFiles.filename(TDR2ZOCFiles.TOPPID==TOPPID),'HeaderLines',26);
+        data=readmatrix(TDR3ZOCFiles.folder(TDR3ZOCFiles.TOPPID==TOPPID),'\',...
+            TDR3ZOCFiles.filename(TDR3ZOCFiles.TOPPID==TOPPID),'HeaderLines',26);
     end
     %Define length dimension and variables for TDR1 ZOC
     netcdf.reDef(ncid);
     if exist('data','var')==1
-        ZOCTDR2dimid=netcdf.defDim(ncid,'ZOCTDR2_rows',size(data,1));
+        ZOCTDR3dimid=netcdf.defDim(ncid,'ZOCTDR3_rows',size(data,1));
     else
-        ZOCTDR2dimid=netcdf.defDim(ncid,'ZOCTDR2_rows',0);
+        ZOCTDR3dimid=netcdf.defDim(ncid,'ZOCTDR3_rows',0);
     end
-    ZOCTDR2Date=netcdf.defVar(ZOCTDR2GrpID,'DATE','NC_DOUBLE',ZOCTDR2dimid);
-    netcdf.putAtt(ZOCTDR2GrpID,ZOCTDR2Date,'Description','MATLAB serial date');
-    netcdf.putAtt(ZOCTDR2GrpID,ZOCTDR2Date,'Origin','January 0, 0000 in the proleptic ISO calendar');
-    ZOCTDR2CorrDepth=netcdf.defVar(ZOCTDR2GrpID,'CORR_DEPTH','NC_DOUBLE',ZOCTDR2dimid);
-    netcdf.putAtt(ZOCTDR2GrpID,ZOCTDR2CorrDepth,'Description','Depth corrected for true surface')
-    netcdf.putAtt(ZOCTDR2GrpID,ZOCTDR2CorrDepth,'Units','meters')
-    ZOCTDR2Depth=netcdf.defVar(ZOCTDR2GrpID,'DEPTH','NC_DOUBLE',ZOCTDR2dimid);
-    netcdf.putAtt(ZOCTDR2GrpID,ZOCTDR2Depth,'Description','Uncorrected depth')
-    netcdf.putAtt(ZOCTDR2GrpID,ZOCTDR2Depth,'Units','meters')
-    netcdf.endDef(ZOCTDR2GrpID);
+    ZOCTDR3Date=netcdf.defVar(ZOCTDR3GrpID,'DATE','NC_DOUBLE',ZOCTDR3dimid);
+    netcdf.putAtt(ZOCTDR3GrpID,ZOCTDR3Date,'Description','MATLAB serial date');
+    netcdf.putAtt(ZOCTDR3GrpID,ZOCTDR3Date,'Origin','January 0, 0000 in the proleptic ISO calendar');
+    ZOCTDR3CorrDepth=netcdf.defVar(ZOCTDR3GrpID,'CORR_DEPTH','NC_DOUBLE',ZOCTDR3dimid);
+    netcdf.putAtt(ZOCTDR3GrpID,ZOCTDR3CorrDepth,'Description','Depth corrected for true surface')
+    netcdf.putAtt(ZOCTDR3GrpID,ZOCTDR3CorrDepth,'Units','meters')
+    ZOCTDR3Depth=netcdf.defVar(ZOCTDR3GrpID,'DEPTH','NC_DOUBLE',ZOCTDR3dimid);
+    netcdf.putAtt(ZOCTDR3GrpID,ZOCTDR3Depth,'Description','Uncorrected depth')
+    netcdf.putAtt(ZOCTDR3GrpID,ZOCTDR3Depth,'Units','meters')
+    netcdf.endDef(ZOCTDR3GrpID);
 
     %Write in data
-    if ~isempty(data)
-        netcdf.putVar(ZOCTDR2GrpID,ZOCTDR2Date,data(:,2));
-        netcdf.putVar(ZOCTDR2GrpID,ZOCTDR2CorrDepth,data(:,1));
-        netcdf.putVar(ZOCTDR2GrpID,ZOCTDR2Depth,data(:,3));
+    if exist('data','var')==1
+        netcdf.putVar(ZOCTDR3GrpID,ZOCTDR3Date,data(:,2));
+        netcdf.putVar(ZOCTDR3GrpID,ZOCTDR3CorrDepth,data(:,1));
+        netcdf.putVar(ZOCTDR3GrpID,ZOCTDR3Depth,data(:,3));
     else
     end
     clear data
     
 netcdf.close(ncid);
 
-    %% Create level 3 netCDF file, groups, and global attributes
-    filename=[num2str(TOPPID) '_TrackTDR_Processed.nc'];
+%% Create level 3 netCDF file, groups, and global attributes
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+    filename=[folder '\' num2str(TOPPID) '_TrackTDR_Processed.nc'];
     ncid=netcdf.create(filename,'CLOBBER');
 
     %Data Groups
@@ -653,16 +668,16 @@ netcdf.close(ncid);
     TDR2SubGrpID=netcdf.defGrp(ncid,'TDR2_SUB');
     TDR3GrpID=netcdf.defGrp(ncid,'TDR3');
     TDR3SubGrpID=netcdf.defGrp(ncid,'TDR3_SUB');
-    AniMotumGrpID=netcdf.defGrp(ncid,'FOIE_GRAS');
+    AniMotumGrpID=netcdf.defGrp(ncid,'ANI_MOTUM');
 
     %Global Attributes
     %%%%%Creation/versions/permissions
-    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"), "_____DATA_PROCESSING_AND_ATTRIBUTION_____",'________');
+    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"), "_____DATA_PROCESSING_AND_ATTRIBUTION____________________",'____DATA_PROCESSING_AND_ATTRIBUTION________________');
     netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"), 'creation_date',string(datetime("now")));
     netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "MATLAB Version", version);
     netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "R Version", '');
     netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "AniMotum Version", '');
-    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "DA-ZOC Version", '2.2/1.1');
+    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "DA-ZOC Version", '2.3/1.2');
     netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "Data_Owner", 'Daniel Costa');
     netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "Is_Data_Public",...
         'Yes: data can be used freely as long as data owner is properly cited');
@@ -673,21 +688,27 @@ netcdf.close(ncid);
     netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "Timezone", 'UTC');
 
     %%%%%Animal MetaData    
-    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "____ANIMAL_METADATA____",'________');
-    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "SealID",'');
+    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "____ANIMAL_METADATA____________________",'____ANIMAL_METADATA________________');
+    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "SealID", string(MetaDataAll.FieldID(j)));
     netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "Species", 'Mirounga angustirostris');
-    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "Sex", '');
-    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "Age_Class", '');
-    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "Birth_Year", '');
+    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "Sex", string(MetaDataAll.Sex(j)));
+    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "Age_Class", string(MetaDataAll.AgeClass(j)));
+    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "Birth_Year", MetaDataAll.BirthYear(j));
     netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "Had_Pup", '');
     
     %%%%%Deployment MetaData
-    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "____DEPLOYMENT_METADATA____",'________');
+    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "____DEPLOYMENT_METADATA____________________",'____DEPLOYMENT_METADATA________________');
     netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "DeploymentID",TOPPID);
     netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "Deployment_Year", '');
     netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "Deployment_Season", string(MetaDataAll.Season(j)));
     netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "Instruments_Recovered", '');
-    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "Other_Deployments",'' ); %Need to build this in somehow
+    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "Manipulation?", string(MetaDataAll.Manipulation(j)));
+
+    %Create list of TOPP IDs for other deployments on same animal
+    rows=find(strcmp(MetaDataAll.FieldID(j),MetaDataAll.FieldID));
+    AllDeployments=strjoin(string(MetaDataAll.TOPPID(rows,1)));
+    clear rows
+    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "Other_Deployments", AllDeployments);
     netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "Departure_Location", string(MetaDataAll.DepartLoc(j)));
     netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "Departure_Lat", MetaDataAll.DepartLat(j));
     netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "Departure_Lon", MetaDataAll.DepartLon(j));
@@ -698,11 +719,11 @@ netcdf.close(ncid);
     netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "Arrival_Datetime", string(MetaDataAll.ArriveDate(j))); 
     
     %%%%%Data Quality
-    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "____DATA_QUALITY____",'________');
-    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "Track_QC_Flag",'');
-    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "TDR1_QC_Flag",'');
-    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "TDR2_QC_Flag",'');
-    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "TDR3_QC_Flag",'');
+    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "____DATA_QUALITY____________________",'____DATA_QUALITY________________');
+    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "Track_QC_Flag",TagMetaDataAll.SatTagQC(i));
+    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "TDR1_QC_Flag",TagMetaDataAll.TDR1QC(i));
+    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "TDR2_QC_Flag",TagMetaDataAll.TDR2QC(i));
+    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "TDR3_QC_Flag",TagMetaDataAll.TDR3QC(i));
     netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "TDR1_SamplingFrequency", '');
     netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "TDR1_DepthResolution", '');
     netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "TDR2_SamplingFrequency", '');
@@ -711,33 +732,31 @@ netcdf.close(ncid);
     netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "TDR3_DepthResolution", '');
 
     %%%%%Instrument MetaData
-    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "____INSTRUMENT_METADATA____",'________');
+    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "____INSTRUMENT_METADATA____________________",'____INSTRUMENT_METADATA________________');
+    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "Location_Tag_Manufacturer", string(TagMetaDataAll.SatTagManufacturer(i)));
+    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "Location_Tag_Model", string(TagMetaDataAll.SatTagType(i)));
+    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "Location_Tag_ID", string(TagMetaDataAll.SatTagID(i)));
     netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "PTT", TagMetaDataAll.SatTagPTT(i));
-    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "Argos_Tag_Model", TagMetaDataAll.SatTagType(i));
-    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "Argos_Tag_ID", TagMetaDataAll.SatTagID(i));
-    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "Argos_Tag_Manufacturer", '');
-    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "GPS_Tag_Model", '');
-    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "GPS_Tag_ID", '');
-    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "GPS_Tag_Manufacturer", '');
-    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "TDR1_Tag_Model", TagMetaDataAll.TDR1Type(i));
-    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "TDR1_Tag_ID", TagMetaDataAll.TDR1ID(i));
-    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "TDR1_Tag_Manufacturer", '');
-    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "TDR1_Comments", TagMetaDataAll.TDR1Comment(i));
-    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "TDR2_Tag_Model", TagMetaDataAll.TDR2Type(i));
-    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "TDR2_Tag_ID", TagMetaDataAll.TDR2ID(i));
-    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "TDR2_Tag_Manufacturer", '');
-    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "TDR2_Comments", TagMetaDataAll.TDR2Comment(i));
-    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "TDR3_Tag_Model", TagMetaDataAll.TDR3Type(i));
-    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "TDR3_Tag_ID", TagMetaDataAll.TDR3ID(i));
-    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "TDR3_Tag_Manufacturer", '');
-    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "TDR3_Comments", TagMetaDataAll.TDR3Comment(i));
+    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "TDR1_Tag_Manufacturer", string(TagMetaDataAll.TDR1Manufacturer(i)));
+    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "TDR1_Tag_Model", string(TagMetaDataAll.TDR1Type(i)));
+    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "TDR1_Tag_ID", string(TagMetaDataAll.TDR1ID(i)));
+    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "TDR1_Comments", string(TagMetaDataAll.TDR1Comments(i)));
+    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "TDR2_Tag_Manufacturer", string(TagMetaDataAll.TDR1Manufacturer1(i)));
+    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "TDR2_Tag_Model", string(TagMetaDataAll.TDR2Type(i)));
+    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "TDR2_Tag_ID", string(TagMetaDataAll.TDR2ID(i)));
+    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "TDR2_Comments", string(TagMetaDataAll.TDR2Comments(i)));
+    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "TDR3_Tag_Manufacturer", string(TagMetaDataAll.TDR1Manufacturer2(i)));
+    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "TDR3_Tag_Model", string(TagMetaDataAll.TDR3Type(i)));
+    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "TDR3_Tag_ID", string(TagMetaDataAll.TDR3ID(i)));
+    netcdf.putAtt(ncid, netcdf.getConstant("NC_GLOBAL"),  "TDR3_Comments", string(TagMetaDataAll.TDR3Comment(i)));
 
 %% Primary Variables
+
     % TDR1 DiveStat
     %load DiveStat file
     try
-        data=readtable(strcat(TDRDiveStatFiles.folder(TDRDiveStatFiles.TOPPID==TOPPID),'\',...
-            TDRDiveStatFiles.filename(TDRDiveStatFiles.TOPPID==TOPPID)),'NumHeaderLines',25);
+        data=readtable(strcat(TDRDiveStatFiles.folder(TDRDiveStatFiles.TOPPID==MetaDataAll.TOPPID(j)),...
+        '\',strtok(TDRDiveStatFiles.filename(TDRDiveStatFiles.TOPPID==MetaDataAll.TOPPID(j)),'.'),'_QC.csv'));
         data.DateTime=datetime(data.JulDate,"ConvertFrom","datenum");
     end
     %Create a 1-D variable (length of divestat x 1) for each column of the
@@ -759,13 +778,13 @@ netcdf.close(ncid);
     netcdf.putAtt(TDR1GrpID,TDR1Dur,'Description','Total duration of the dive');
     netcdf.putAtt(TDR1GrpID,TDR1Dur,'Units','seconds');
     TDR1DTime=netcdf.defVar(TDR1GrpID,'DESC_TIME',"NC_DOUBLE",TDR1dimid);
-    netcdf.putAtt(TDR1GrpID,TDR1DTime,'Description','Time spend in descent phase of dive');
+    netcdf.putAtt(TDR1GrpID,TDR1DTime,'Description','Time spent in descent phase of dive');
     netcdf.putAtt(TDR1GrpID,TDR1DTime,'Units','seconds');
     TDR1BTime=netcdf.defVar(TDR1GrpID,'BOTT_TIME',"NC_DOUBLE",TDR1dimid);
-    netcdf.putAtt(TDR1GrpID,TDR1BTime,'Description','Time spend in bottom phase of dive');
+    netcdf.putAtt(TDR1GrpID,TDR1BTime,'Description','Time spent in bottom phase of dive');
     netcdf.putAtt(TDR1GrpID,TDR1BTime,'Units','seconds');
     TDR1ATime=netcdf.defVar(TDR1GrpID,'ASC_TIME',"NC_DOUBLE",TDR1dimid);
-    netcdf.putAtt(TDR1GrpID,TDR1ATime,'Description','Time spend in ascent phase of dive');
+    netcdf.putAtt(TDR1GrpID,TDR1ATime,'Description','Time spent in ascent phase of dive');
     netcdf.putAtt(TDR1GrpID,TDR1ATime,'Units','seconds');
     TDR1DRate=netcdf.defVar(TDR1GrpID,'DESC_RATE',"NC_DOUBLE",TDR1dimid);
     netcdf.putAtt(TDR1GrpID,TDR1DRate,'Description','Average rate of descent');
@@ -825,7 +844,7 @@ netcdf.close(ncid);
     TDR1Sec=netcdf.defVar(TDR1GrpID,'SEC',"NC_DOUBLE",TDR1dimid);
     netcdf.endDef(TDR1GrpID);
 
-    if ~isempty(data)
+    if exist('data','var')==1
         netcdf.putVar(TDR1GrpID,TDR1Date,string(data.DateTime));
         netcdf.putVar(TDR1GrpID,TDR1Depth,data.Maxdepth);
         netcdf.putVar(TDR1GrpID,TDR1Dur,data.Dduration);
@@ -859,8 +878,8 @@ netcdf.close(ncid);
     % TDR2 DiveStat
     %load DiveStat file
     try
-        data=readtable(strcat(TDR2DiveStatFiles.folder(TDR2DiveStatFiles.TOPPID==TOPPID),'\',...
-            TDR2DiveStatFiles.filename(TDR2DiveStatFiles.TOPPID==TOPPID)),'NumHeaderLines',25);
+        data=readtable(strcat(TDR2DiveStatFiles.folder(TDR2DiveStatFiles.TOPPID==MetaDataAll.TOPPID(j)),...
+            '\',strtok(TDR2DiveStatFiles.filename(TDR2DiveStatFiles.TOPPID==MetaDataAll.TOPPID(j)),'.'),'_QC.csv'));
         data.DateTime=datetime(data.JulDate,"ConvertFrom","datenum");
     end
     %Create a 1-D variable (length of divestat x 1) for each column of the
@@ -882,13 +901,13 @@ netcdf.close(ncid);
     netcdf.putAtt(TDR2GrpID,TDR2Dur,'Description','Total duration of the dive');
     netcdf.putAtt(TDR2GrpID,TDR2Dur,'Units','seconds');
     TDR2DTime=netcdf.defVar(TDR2GrpID,'DESC_TIME',"NC_DOUBLE",TDR2dimid);
-    netcdf.putAtt(TDR2GrpID,TDR2DTime,'Description','Time spend in descent phase of dive');
+    netcdf.putAtt(TDR2GrpID,TDR2DTime,'Description','Time spent in descent phase of dive');
     netcdf.putAtt(TDR2GrpID,TDR2DTime,'Units','seconds');
     TDR2BTime=netcdf.defVar(TDR2GrpID,'BOTT_TIME',"NC_DOUBLE",TDR2dimid);
-    netcdf.putAtt(TDR2GrpID,TDR2BTime,'Description','Time spend in bottom phase of dive');
+    netcdf.putAtt(TDR2GrpID,TDR2BTime,'Description','Time spent in bottom phase of dive');
     netcdf.putAtt(TDR2GrpID,TDR2BTime,'Units','seconds');
     TDR2ATime=netcdf.defVar(TDR2GrpID,'ASC_TIME',"NC_DOUBLE",TDR2dimid);
-    netcdf.putAtt(TDR2GrpID,TDR2ATime,'Description','Time spend in ascent phase of dive');
+    netcdf.putAtt(TDR2GrpID,TDR2ATime,'Description','Time spent in ascent phase of dive');
     netcdf.putAtt(TDR2GrpID,TDR2ATime,'Units','seconds');
     TDR2DRate=netcdf.defVar(TDR2GrpID,'DESC_RATE',"NC_DOUBLE",TDR2dimid);
     netcdf.putAtt(TDR2GrpID,TDR2DRate,'Description','Average rate of descent');
@@ -982,8 +1001,8 @@ netcdf.close(ncid);
     % TDR3 DiveStat
     %load DiveStat file
     try
-        data=readtable(strcat(TDR3DiveStatFiles.folder(TDR3DiveStatFiles.TOPPID==TOPPID),'\',...
-            TDR3DiveStatFiles.filename(TDR3DiveStatFiles.TOPPID==TOPPID)),'NumHeaderLines',25);
+        data=readtable(strcat(TDR3DiveStatFiles.folder(TDR3DiveStatFiles.TOPPID==TOPPID),...
+            '\',strtok(TDR3DiveStatFiles.filename(TDR3DiveStatFiles.TOPPID==TOPPID),'.'),'_QC.csv'));
         data.DateTime=datetime(data.JulDate,"ConvertFrom","datenum");
     end
     %Create a 1-D variable (length of divestat x 1) for each column of the
@@ -1005,13 +1024,13 @@ netcdf.close(ncid);
     netcdf.putAtt(TDR3GrpID,TDR3Dur,'Description','Total duration of the dive');
     netcdf.putAtt(TDR3GrpID,TDR3Dur,'Units','seconds');
     TDR3DTime=netcdf.defVar(TDR3GrpID,'DESC_TIME',"NC_DOUBLE",TDR3dimid);
-    netcdf.putAtt(TDR3GrpID,TDR3DTime,'Description','Time spend in descent phase of dive');
+    netcdf.putAtt(TDR3GrpID,TDR3DTime,'Description','Time spent in descent phase of dive');
     netcdf.putAtt(TDR3GrpID,TDR3DTime,'Units','seconds');
     TDR3BTime=netcdf.defVar(TDR3GrpID,'BOTT_TIME',"NC_DOUBLE",TDR3dimid);
-    netcdf.putAtt(TDR3GrpID,TDR3BTime,'Description','Time spend in bottom phase of dive');
+    netcdf.putAtt(TDR3GrpID,TDR3BTime,'Description','Time spent in bottom phase of dive');
     netcdf.putAtt(TDR3GrpID,TDR3BTime,'Units','seconds');
     TDR3ATime=netcdf.defVar(TDR3GrpID,'ASC_TIME',"NC_DOUBLE",TDR3dimid);
-    netcdf.putAtt(TDR3GrpID,TDR3ATime,'Description','Time spend in ascent phase of dive');
+    netcdf.putAtt(TDR3GrpID,TDR3ATime,'Description','Time spent in ascent phase of dive');
     netcdf.putAtt(TDR3GrpID,TDR3ATime,'Units','seconds');
     TDR3DRate=netcdf.defVar(TDR3GrpID,'DESC_RATE',"NC_DOUBLE",TDR3dimid);
     netcdf.putAtt(TDR3GrpID,TDR3DRate,'Description','Average rate of descent');
@@ -1106,8 +1125,8 @@ netcdf.close(ncid);
     % TDR1 Subset DiveStat
     %load DiveStat file
     try
-        data=readtable(strcat(TDRSubDiveStatFiles.folder(TDRSubDiveStatFiles.TOPPID==TOPPID),'\',...
-            TDRSubDiveStatFiles.filename(TDRSubDiveStatFiles.TOPPID==TOPPID)),'NumHeaderLines',25);
+        data=readtable(strcat(TDRSubDiveStatFiles.folder(TDRSubDiveStatFiles.TOPPID==TOPPID),...
+        '\',strtok(TDRSubDiveStatFiles.filename(TDRSubDiveStatFiles.TOPPID==TOPPID),'.'),'_QC.csv'));
         data.DateTime=datetime(data.JulDate,"ConvertFrom","datenum");
     end
 
@@ -1130,13 +1149,13 @@ netcdf.close(ncid);
     netcdf.putAtt(TDR1SubGrpID,TDR1SubDur,'Description','Total duration of the dive');
     netcdf.putAtt(TDR1SubGrpID,TDR1SubDur,'Units','seconds');
     TDR1SubDTime=netcdf.defVar(TDR1SubGrpID,'DESC_TIME',"NC_DOUBLE",TDR1Subdimid);
-    netcdf.putAtt(TDR1SubGrpID,TDR1SubDTime,'Description','Time spend in descent phase of dive');
+    netcdf.putAtt(TDR1SubGrpID,TDR1SubDTime,'Description','Time spent in descent phase of dive');
     netcdf.putAtt(TDR1SubGrpID,TDR1SubDTime,'Units','seconds');
     TDR1SubBTime=netcdf.defVar(TDR1SubGrpID,'BOTT_TIME',"NC_DOUBLE",TDR1Subdimid);
-    netcdf.putAtt(TDR1SubGrpID,TDR1SubBTime,'Description','Time spend in bottom phase of dive');
+    netcdf.putAtt(TDR1SubGrpID,TDR1SubBTime,'Description','Time spent in bottom phase of dive');
     netcdf.putAtt(TDR1SubGrpID,TDR1SubBTime,'Units','seconds');
     TDR1SubATime=netcdf.defVar(TDR1SubGrpID,'ASC_TIME',"NC_DOUBLE",TDR1Subdimid);
-    netcdf.putAtt(TDR1SubGrpID,TDR1SubATime,'Description','Time spend in ascent phase of dive');
+    netcdf.putAtt(TDR1SubGrpID,TDR1SubATime,'Description','Time spent in ascent phase of dive');
     netcdf.putAtt(TDR1SubGrpID,TDR1SubATime,'Units','seconds');
     TDR1SubDRate=netcdf.defVar(TDR1SubGrpID,'DESC_RATE',"NC_DOUBLE",TDR1Subdimid);
     netcdf.putAtt(TDR1SubGrpID,TDR1SubDRate,'Description','Average rate of descent');
@@ -1231,8 +1250,8 @@ netcdf.close(ncid);
     % TDR2Sub DiveStat
     %load DiveStat file
     try
-        data=readtable(strcat(TDR2SubDiveStatFiles.folder(TDR2SubDiveStatFiles.TOPPID==TOPPID),'\',...
-            TDR2SubDiveStatFiles.filename(TDR2SubDiveStatFiles.TOPPID==TOPPID)),'NumHeaderLines',25);
+        data=readtable(strcat(TDR2SubDiveStatFiles.folder(TDR2SubDiveStatFiles.TOPPID==TOPPID),...
+        '\',strtok(TDR2SubDiveStatFiles.filename(TDR2SubDiveStatFiles.TOPPID==TOPPID),'.'),'_QC.csv'));
         data.DateTime=datetime(data.JulDate,"ConvertFrom","datenum");
     end
     %Create a 1-D variable (length of divestat x 1) for each column of the
@@ -1254,13 +1273,13 @@ netcdf.close(ncid);
     netcdf.putAtt(TDR2SubGrpID,TDR2SubDur,'Description','Total duration of the dive');
     netcdf.putAtt(TDR2SubGrpID,TDR2SubDur,'Units','seconds');
     TDR2SubDTime=netcdf.defVar(TDR2SubGrpID,'DESC_TIME',"NC_DOUBLE",TDR2Subdimid);
-    netcdf.putAtt(TDR2SubGrpID,TDR2SubDTime,'Description','Time spend in descent phase of dive');
+    netcdf.putAtt(TDR2SubGrpID,TDR2SubDTime,'Description','Time spent in descent phase of dive');
     netcdf.putAtt(TDR2SubGrpID,TDR2SubDTime,'Units','seconds');
     TDR2SubBTime=netcdf.defVar(TDR2SubGrpID,'BOTT_TIME',"NC_DOUBLE",TDR2Subdimid);
-    netcdf.putAtt(TDR2SubGrpID,TDR2SubBTime,'Description','Time spend in bottom phase of dive');
+    netcdf.putAtt(TDR2SubGrpID,TDR2SubBTime,'Description','Time spent in bottom phase of dive');
     netcdf.putAtt(TDR2SubGrpID,TDR2SubBTime,'Units','seconds');
     TDR2SubATime=netcdf.defVar(TDR2SubGrpID,'ASC_TIME',"NC_DOUBLE",TDR2Subdimid);
-    netcdf.putAtt(TDR2SubGrpID,TDR2SubATime,'Description','Time spend in ascent phase of dive');
+    netcdf.putAtt(TDR2SubGrpID,TDR2SubATime,'Description','Time spent in ascent phase of dive');
     netcdf.putAtt(TDR2SubGrpID,TDR2SubATime,'Units','seconds');
     TDR2SubDRate=netcdf.defVar(TDR2SubGrpID,'DESC_RATE',"NC_DOUBLE",TDR2Subdimid);
     netcdf.putAtt(TDR2SubGrpID,TDR2SubDRate,'Description','Average rate of descent');
@@ -1355,8 +1374,8 @@ netcdf.close(ncid);
     % TDR3Sub DiveStat
     %load DiveStat file
     try
-        data=readtable(strcat(TDR3SubDiveStatFiles.folder(TDR3SubDiveStatFiles.TOPPID==TOPPID),'\',...
-            TDR3SubDiveStatFiles.filename(TDR3SubDiveStatFiles.TOPPID==TOPPID)),'NumHeaderLines',25);
+        data=readtable(strcat(TDR3SubDiveStatFiles.folder(TDR3SubDiveStatFiles.TOPPID==TOPPID),...
+        '\',strtok(TDR3SubDiveStatFiles.filename(TDR3SubDiveStatFiles.TOPPID==TOPPID),'.'),'_QC.csv'));
         data.DateTime=datetime(data.JulDate,"ConvertFrom","datenum");
     end
 
@@ -1379,13 +1398,13 @@ netcdf.close(ncid);
     netcdf.putAtt(TDR3SubGrpID,TDR3SubDur,'Description','Total duration of the dive');
     netcdf.putAtt(TDR3SubGrpID,TDR3SubDur,'Units','seconds');
     TDR3SubDTime=netcdf.defVar(TDR3SubGrpID,'DESC_TIME',"NC_DOUBLE",TDR3Subdimid);
-    netcdf.putAtt(TDR3SubGrpID,TDR3SubDTime,'Description','Time spend in descent phase of dive');
+    netcdf.putAtt(TDR3SubGrpID,TDR3SubDTime,'Description','Time spent in descent phase of dive');
     netcdf.putAtt(TDR3SubGrpID,TDR3SubDTime,'Units','seconds');
     TDR3SubBTime=netcdf.defVar(TDR3SubGrpID,'BOTT_TIME',"NC_DOUBLE",TDR3Subdimid);
-    netcdf.putAtt(TDR3SubGrpID,TDR3SubBTime,'Description','Time spend in bottom phase of dive');
+    netcdf.putAtt(TDR3SubGrpID,TDR3SubBTime,'Description','Time spent in bottom phase of dive');
     netcdf.putAtt(TDR3SubGrpID,TDR3SubBTime,'Units','seconds');
     TDR3SubATime=netcdf.defVar(TDR3SubGrpID,'ASC_TIME',"NC_DOUBLE",TDR3Subdimid);
-    netcdf.putAtt(TDR3SubGrpID,TDR3SubATime,'Description','Time spend in ascent phase of dive');
+    netcdf.putAtt(TDR3SubGrpID,TDR3SubATime,'Description','Time spent in ascent phase of dive');
     netcdf.putAtt(TDR3SubGrpID,TDR3SubATime,'Units','seconds');
     TDR3SubDRate=netcdf.defVar(TDR3SubGrpID,'DESC_RATE',"NC_DOUBLE",TDR3Subdimid);
     netcdf.putAtt(TDR3SubGrpID,TDR3SubDRate,'Description','Average rate of descent');
@@ -1479,8 +1498,8 @@ netcdf.close(ncid);
 
     %AniMotum Track
     try
-        data=readtable(strcat(TrackAniMotumFiles.folder(TrackAniMotumFiles.TOPPID==TOPPID),'\',...
-            TrackAniMotumFiles.filename(TrackAniMotumFiles.TOPPID==TOPPID)));
+        data=readtable(strcat(TrackAniMotumFiles.folder(TrackAniMotumFiles.TOPPID==TOPPID),...
+        '\',TrackAniMotumFiles.filename(TrackAniMotumFiles.TOPPID==TOPPID)));
     end
     
     netcdf.reDef(ncid);
@@ -1526,9 +1545,9 @@ netcdf.close(ncid);
     AniMotumS=netcdf.defVar(AniMotumGrpID,'S',"NC_DOUBLE",TrackAniMotumdimid);
     netcdf.putAtt(AniMotumGrpID,AniMotumS,"Description"," AniMotum estimated directionless velocity");
     netcdf.putAtt(AniMotumGrpID,AniMotumS,'Units','m/s');
-    AniMotumSse=netcdf.defVar(AniMotumGrpID,'S_SE',"NC_DOUBLE",TrackAniMotumdimid);
-    netcdf.putAtt(AniMotumGrpID,AniMotumSse,"Description","AniMotum estimated standard deviation in directionless velocity");
-    netcdf.putAtt(AniMotumGrpID,AniMotumSse,'Units','m/s');
+    %AniMotumSse=netcdf.defVar(AniMotumGrpID,'S_SE',"NC_DOUBLE",TrackAniMotumdimid);
+    %netcdf.putAtt(AniMotumGrpID,AniMotumSse,"Description","AniMotum estimated standard deviation in directionless velocity");
+    %netcdf.putAtt(AniMotumGrpID,AniMotumSse,'Units','m/s');
     netcdf.endDef(ncid);
     if exist('data','var')==1
         netcdf.putVar(AniMotumGrpID,AniMotumDate,string(data.date));
@@ -1543,13 +1562,12 @@ netcdf.close(ncid);
         netcdf.putVar(AniMotumGrpID,AniMotumUse,data.u_se);
         netcdf.putVar(AniMotumGrpID,AniMotumVse,data.v_se);
         netcdf.putVar(AniMotumGrpID,AniMotumS,data.s);
-        netcdf.putVar(AniMotumGrpID,AniMotumSse,data.s_se);
+        %netcdf.putVar(AniMotumGrpID,AniMotumSse,data.s_se);
     else
     end
     clear data
     
 netcdf.close(ncid);
-clearvars -except MetaDataAll TagMetaDataAll i 
+clearvars -except MetaDataAll TagMetaDataAll i folder
 end
-
-    ncinfo(filename);
+toc
