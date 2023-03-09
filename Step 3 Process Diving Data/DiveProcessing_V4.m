@@ -38,7 +38,8 @@
 clear
 SMRUfiles=dir('*tdr.txt');
 
-for k=15:length(SMRUfiles)
+for k=48:51
+%for k=15:length(SMRUfiles)
     smruTDR_import_V4(SMRUfiles(k).name)
 end
 
@@ -64,7 +65,7 @@ file=[file1; file2;file3];
 clear file1 file2 file3
 load('MetaData.mat');
 
-for k=6:length(file)
+for k=48:51
     %Find start and end time for each deployment in MetaData using TOPPID
     TOPPID=str2double(strtok(file(k).name,'_'));
     row=find(MetaDataAll.TOPPID==TOPPID);
